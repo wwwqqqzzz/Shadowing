@@ -1,0 +1,12 @@
+<view class="recorder-container">
+  <view
+    class="record-btn {{recording ? 'active' : ''}}"
+    bindtap="{{recording ? 'onStopRecord' : 'onStartRecord'}}"
+  >
+    <text>{{recording ? '⏹' : '🎤'}}</text>
+  </view>
+
+  <view class="playback-btn" bindtap="onPlayback" wx:if="{{!recording}}">
+    <text>🔊</text>
+  </view>
+</view>

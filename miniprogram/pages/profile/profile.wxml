@@ -1,0 +1,56 @@
+<view class="container">
+  <!-- Loading -->
+  <view class="loading-area" wx:if="{{loading}}">
+    <view class="wait-dots">
+      <view class="wait-dot"></view>
+      <view class="wait-dot"></view>
+      <view class="wait-dot"></view>
+    </view>
+  </view>
+
+  <view wx:else>
+    <!-- Area 1: Stats cards -->
+    <view class="stats-row">
+      <view class="stats-card">
+        <text class="stats-number">{{totalSentences}}</text>
+        <text class="stats-label">句</text>
+      </view>
+      <view class="stats-card">
+        <text class="stats-number">{{totalDurationText}}</text>
+        <text class="stats-label">分钟</text>
+      </view>
+    </view>
+
+    <!-- Area 2: Section title -->
+    <view class="section-title">最近练习</view>
+
+    <!-- Area 3: Recent records -->
+    <view class="record-list" wx:if="{{recentRecords.length > 0}}">
+      <view
+        class="record-item"
+        wx:for="{{recentRecords}}"
+        wx:key="id"
+        data-material-id="{{item.sentence.material.id}}"
+        bindtap="onTapMaterial"
+        hover-class="item-tap"
+      >
+        <view class="record-left">
+          <text class="record-material-title">{{item.sentence.material.title}}</text>
+          <text class="record-text">{{item.sentence.text}}</text>
+        </view>
+        <view class="record-right">
+          <text class="record-duration">{{item.durationText}}</text>
+          <text class="record-time">{{item.createdAtText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Empty state -->
+    <view class="empty-state" wx:if="{{recentRecords.length === 0}}">
+      <text class="empty-text">还没有练习记录，去选一个素材开始吧</text>
+      <view class="empty-btn" bindtap="onTapMaterial">
+        <text>去素材列表</text>
+      </view>
+    </view>
+  </view>
+</view>

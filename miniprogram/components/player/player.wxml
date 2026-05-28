@@ -1,0 +1,23 @@
+<view class="player-container">
+  <view class="controls-row">
+    <view class="ctrl-btn" bindtap="onSpeedChange">
+      <text class="speed-text">{{speed}}x</text>
+    </view>
+
+    <view class="ctrl-btn" bindtap="onSkipPrev">
+      <text class="icon">⏮</text>
+    </view>
+
+    <view class="ctrl-btn primary" bindtap="onTogglePlay">
+      <text class="icon primary-icon">{{playing ? '⏸' : '▶'}}</text>
+    </view>
+
+    <view class="ctrl-btn" bindtap="onSkipNext">
+      <text class="icon">⏭</text>
+    </view>
+
+    <view class="ctrl-btn {{loop ? 'loop-active' : ''}}" bindtap="onLoop">
+      <text class="icon loop-icon">🔁</text>
+    </view>
+  </view>
+</view>

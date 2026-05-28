@@ -1,0 +1,57 @@
+.container {
+  padding: 30rpx;
+}
+
+.header {
+  margin-bottom: 40rpx;
+}
+
+.greeting {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.section {
+  margin-bottom: 40rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.empty-state {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 60rpx 40rpx;
+  text-align: center;
+}
+
+.empty-text {
+  display: block;
+  font-size: 28rpx;
+  color: #999;
+  margin-bottom: 12rpx;
+}
+
+.empty-hint {
+  display: block;
+  font-size: 26rpx;
+  color: #bbb;
+}
+
+.category-list {
+  display: flex;
+  gap: 20rpx;
+}
+
+.category-item {
+  background: #fff;
+  padding: 20rpx 40rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #333;
+}

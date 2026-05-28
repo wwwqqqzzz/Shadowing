@@ -1,0 +1,32 @@
+<scroll-view
+  class="subtitle-scroll"
+  scroll-y
+  scroll-into-view="s-{{currentIndex}}"
+  scroll-with-animation
+  enhanced
+  show-scrollbar="{{false}}"
+>
+  <view class="subtitle-padding-top"></view>
+
+  <view
+    wx:for="{{sentences}}"
+    wx:key="id"
+    id="s-{{index}}"
+    class="subtitle-block {{index === currentIndex ? 'active' : ''}} {{index < currentIndex ? 'done' : ''}}"
+    data-index="{{index}}"
+    bindtap="onSentenceTap"
+  >
+    <view class="subtitle-main">
+      <text class="subtitle-text">{{item.text}}</text>
+      <view class="subtitle-index">{{index + 1}}</view>
+    </view>
+    <view class="subtitle-translation {{index === currentIndex ? 'show' : ''}}">
+      <text>{{item.translation}}</text>
+    </view>
+    <view class="subtitle-progress" wx:if="{{index === currentIndex}}">
+      <view class="subtitle-progress-fill" style="width: {{progress}}%"></view>
+    </view>
+  </view>
+
+  <view class="subtitle-padding-bottom"></view>
+</scroll-view>

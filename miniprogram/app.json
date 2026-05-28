@@ -1,0 +1,33 @@
+{
+  "pages": [
+    "pages/materials/materials",
+    "pages/practice/practice",
+    "pages/home/home",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarTitleText": "Shadowing",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f5f5"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#333333",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/materials/materials",
+        "text": "素材"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "requiredBackgroundModes": ["audio"],
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

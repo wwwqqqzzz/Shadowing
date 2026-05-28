@@ -1,0 +1,154 @@
+/* ─── Base ────────────────────────────────────────────── */
+
+page {
+  background: #0f0f0f;
+}
+
+.container {
+  min-height: 100vh;
+  background: #0f0f0f;
+}
+
+/* ─── Loading ─────────────────────────────────────────── */
+
+.loading-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 300rpx;
+  gap: 24rpx;
+}
+
+.wait-dots {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.wait-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #a8e6cf;
+  opacity: 0.3;
+  animation: dotPulse 1.5s ease-in-out infinite;
+}
+
+.wait-dot:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.wait-dot:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* ─── Empty state ─────────────────────────────────────── */
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 300rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #555;
+}
+
+/* ─── Card list ───────────────────────────────────────── */
+
+.material-list {
+  padding: 24rpx 0;
+}
+
+.material-card {
+  margin: 12rpx 32rpx;
+  background: #1a1a1a;
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.card-tap {
+  opacity: 0.8;
+}
+
+/* ─── Cover ───────────────────────────────────────────── */
+
+.card-cover {
+  width: 100%;
+  height: 320rpx;
+  display: block;
+}
+
+.card-cover-placeholder {
+  width: 100%;
+  height: 320rpx;
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+}
+
+/* ─── Card body ───────────────────────────────────────── */
+
+.card-body {
+  padding: 24rpx 28rpx 28rpx;
+}
+
+.card-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #ffffff;
+  line-height: 1.4;
+}
+
+/* ─── Tags row ────────────────────────────────────────── */
+
+.card-tags {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.tag-source {
+  font-size: 22rpx;
+  color: #888;
+  background: #2a2a2a;
+  padding: 4rpx 16rpx;
+  border-radius: 99rpx;
+}
+
+.tag-level {
+  font-size: 22rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 99rpx;
+  font-weight: 500;
+}
+
+.tag-beginner {
+  background: rgba(168, 230, 207, 0.15);
+  color: #a8e6cf;
+}
+
+.tag-intermediate {
+  background: rgba(255, 217, 125, 0.15);
+  color: #ffd97d;
+}
+
+.tag-advanced {
+  background: rgba(255, 153, 153, 0.15);
+  color: #ff9999;
+}
+
+.tag-duration {
+  margin-left: auto;
+  font-size: 22rpx;
+  color: #666;
+}

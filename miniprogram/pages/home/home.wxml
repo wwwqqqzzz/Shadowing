@@ -1,0 +1,22 @@
+<view class="container">
+  <view class="header">
+    <text class="greeting">今日练习</text>
+  </view>
+
+  <view class="section">
+    <view class="section-title">最近练习</view>
+    <view class="empty-state">
+      <text class="empty-text">还没有练习记录</text>
+      <text class="empty-hint">选择一个素材开始跟读吧</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">分类入口</view>
+    <view class="category-list">
+      <view class="category-item">TED</view>
+      <view class="category-item">VOA</view>
+      <view class="category-item">BBC</view>
+    </view>
+  </view>
+</view>

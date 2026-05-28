@@ -1,0 +1,67 @@
+<view class="container">
+  <!-- Top bar: title + progress -->
+  <view class="top-bar">
+    <text class="title-text">{{material.title}}</text>
+    <text class="progress-label">{{currentIndex + 1}} / {{sentences.length}}</text>
+  </view>
+
+  <!-- Subtitles -->
+  <view class="subtitle-wrapper">
+    <scroll-view class="subtitle-area" scroll-y scroll-into-view="s-{{currentIndex}}" scroll-with-animation bindtap="onTapSubtitleBg">
+      <view
+        wx:for="{{sentences}}"
+        wx:key="id"
+        id="s-{{index}}"
+        class="subtitle-item {{index === currentIndex ? 'active' : ''}}"
+        data-index="{{index}}"
+        catchtap="onTapSentence"
+      >
+        <text class="subtitle-text">{{item.text}}</text>
+        <text class="subtitle-translation" wx:if="{{index === currentIndex && item.translation}}">{{item.translation}}</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- Wait indicator or finished text -->
+  <view class="status-area">
+    <view wx:if="{{status === 'waiting' || recording}}" class="waiting-container">
+      <view class="wait-dots" wx:if="{{!recording}}">
+        <view class="wait-dot"></view>
+        <view class="wait-dot"></view>
+        <view class="wait-dot"></view>
+      </view>
+      <text class="recording-label" wx:if="{{recording}}">录音中…</text>
+      <view class="recorder-row">
+        <view class="rec-btn {{recording ? 'recording' : ''}}" bindtap="onToggleRecord">
+          <text class="rec-icon">{{recording ? '🔴' : '🎙'}}</text>
+        </view>
+        <view class="rec-btn" wx:if="{{recordPath && !recording}}" bindtap="onPlayback">
+          <text class="rec-icon playback-icon">🔊</text>
+        </view>
+        <view class="rec-btn" bindtap="onSkipNext">
+          <text class="rec-icon skip-icon">▶▶</text>
+        </view>
+      </view>
+    </view>
+    <text class="finished-text" wx:if="{{status === 'finished'}}">练习完成</text>
+  </view>
+
+  <!-- Controls -->
+  <view class="controls">
+    <view class="ctrl-btn" bindtap="onSpeedChange">
+      <text class="speed-label">{{speed}}x</text>
+    </view>
+    <view class="ctrl-btn" bindtap="onSkipPrev">
+      <text class="ctrl-icon">◀</text>
+    </view>
+    <view class="ctrl-btn play-btn" bindtap="onTogglePlay">
+      <text class="ctrl-icon play-icon">{{playing ? '❚❚' : '▶'}}</text>
+    </view>
+    <view class="ctrl-btn" bindtap="onSkipNext">
+      <text class="ctrl-icon">▶</text>
+    </view>
+    <view class="ctrl-btn {{loop ? 'loop-on' : ''}}" bindtap="onLoop">
+      <text class="ctrl-icon">↻</text>
+    </view>
+  </view>
+</view>

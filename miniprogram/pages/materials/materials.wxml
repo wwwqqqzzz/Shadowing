@@ -1,0 +1,41 @@
+<view class="container">
+  <view class="loading-area" wx:if="{{loading}}">
+    <view class="wait-dots">
+      <view class="wait-dot"></view>
+      <view class="wait-dot"></view>
+      <view class="wait-dot"></view>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:elif="{{materials.length === 0}}">
+    <text class="empty-text">暂无素材</text>
+  </view>
+
+  <view class="material-list" wx:else>
+    <view
+      class="material-card"
+      wx:for="{{materials}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="onTapMaterial"
+      hover-class="card-tap"
+    >
+      <image
+        class="card-cover"
+        src="{{item.coverUrl}}"
+        mode="aspectFill"
+        wx:if="{{item.coverUrl}}"
+      />
+      <view class="card-cover-placeholder" wx:else></view>
+
+      <view class="card-body">
+        <text class="card-title">{{item.title}}</text>
+        <view class="card-tags">
+          <text class="tag-source" wx:if="{{item.source}}">{{item.source}}</text>
+          <text class="tag-level tag-{{item.level}}">{{item.level === 'beginner' ? '入门' : item.level === 'intermediate' ? '中级' : '高级'}}</text>
+          <text class="tag-duration">{{item._durationText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

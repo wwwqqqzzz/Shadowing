@@ -1,0 +1,48 @@
+.recorder-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40rpx;
+  padding: 20rpx 0;
+}
+
+.record-btn {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 77, 77, 0.2);
+  border: 4rpx solid rgba(255, 77, 77, 0.3);
+}
+
+.record-btn text {
+  font-size: 48rpx;
+}
+
+.record-btn.active {
+  background: rgba(255, 77, 77, 0.4);
+  border-color: #ff4d4d;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.playback-btn {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.playback-btn text {
+  font-size: 36rpx;
+  color: #fff;
+}

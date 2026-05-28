@@ -1,0 +1,173 @@
+/* ─── Base ────────────────────────────────────────────── */
+
+page {
+  background: #0f0f0f;
+}
+
+.container {
+  min-height: 100vh;
+  background: #0f0f0f;
+}
+
+/* ─── Loading ─────────────────────────────────────────── */
+
+.loading-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 300rpx;
+}
+
+.wait-dots {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.wait-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #a8e6cf;
+  opacity: 0.3;
+  animation: dotPulse 1.5s ease-in-out infinite;
+}
+
+.wait-dot:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.wait-dot:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* ─── Stats cards ─────────────────────────────────────── */
+
+.stats-row {
+  display: flex;
+  gap: 24rpx;
+  padding: 32rpx 32rpx 0;
+}
+
+.stats-card {
+  flex: 1;
+  background: #1a1a1a;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.stats-number {
+  font-size: 64rpx;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.stats-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* ─── Section title ───────────────────────────────────── */
+
+.section-title {
+  font-size: 26rpx;
+  color: #666;
+  padding: 48rpx 32rpx 20rpx;
+}
+
+/* ─── Record list ─────────────────────────────────────── */
+
+.record-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28rpx 32rpx;
+  border-bottom: 2rpx solid #1e1e1e;
+}
+
+.item-tap {
+  opacity: 0.7;
+}
+
+.record-left {
+  flex: 1;
+  min-width: 0;
+  margin-right: 24rpx;
+}
+
+.record-material-title {
+  display: block;
+  font-size: 28rpx;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-text {
+  display: block;
+  font-size: 24rpx;
+  color: #555;
+  margin-top: 6rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.record-duration {
+  font-size: 26rpx;
+  color: #a8e6cf;
+}
+
+.record-time {
+  font-size: 22rpx;
+  color: #444;
+  margin-top: 4rpx;
+}
+
+/* ─── Empty state ─────────────────────────────────────── */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 200rpx;
+  gap: 32rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #555;
+  text-align: center;
+  padding: 0 60rpx;
+  line-height: 1.6;
+}
+
+.empty-btn {
+  padding: 20rpx 48rpx;
+  border-radius: 99rpx;
+  background: #a8e6cf;
+  font-size: 28rpx;
+  color: #0f0f0f;
+  font-weight: 500;
+}
+
+.empty-btn:active {
+  opacity: 0.7;
+}
