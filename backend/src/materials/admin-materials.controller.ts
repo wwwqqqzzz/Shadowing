@@ -10,7 +10,29 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { resolve } from 'path';
+import { readFileSync, unlinkSync, existsSync } from 'fs';
 import { MaterialsService } from './materials.service';
+
+/** 从 __dirname 向上找项目根目录（与 main.ts 的逻辑一致） */
+function findProjectRoot(): string {
+  let dir = resolve(__dirname);
+  while (!existsSync(resolve(dir, 'miniprogram'))) {
+    const parent = resolve(dir, '..');
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return dir;
+}
+
+const AUDIO_STORAGE = diskStorage({
+  destination: resolve(findProjectRoot(), 'tmp'),
+  filename: (_req, file, cb) => {
+    const ts = Date.now();
+    cb(null, `${ts}-${file.originalname}`);
+  },
+});
 
 @Controller('admin/materials')
 export class AdminMaterialsController {
@@ -18,10 +40,13 @@ export class AdminMaterialsController {
 
   @Post('import')
   @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'audioFile', maxCount: 1 },
-      { name: 'vttFile', maxCount: 1 },
-    ]),
+    FileFieldsInterceptor(
+      [
+        { name: 'audioFile', maxCount: 1 },
+        { name: 'vttFile', maxCount: 1 },
+      ],
+      { storage: AUDIO_STORAGE },
+    ),
   )
   async importMaterial(
     @Body('title') title: string,
@@ -33,8 +58,16 @@ export class AdminMaterialsController {
       vttFile?: Express.Multer.File[];
     },
   ) {
-    const vttContent = files.vttFile?.[0]?.buffer?.toString('utf-8') ?? '';
-    const audioFilename = files.audioFile?.[0]?.originalname ?? '';
+    const vttFile = files.vttFile?.[0];
+    const audioFile = files.audioFile?.[0];
+
+    const vttContent = vttFile ? readFileSync(vttFile.path, 'utf-8') : '';
+    const audioFilename = audioFile?.filename ?? '';
+
+    // VTT 文件不需要持久化，读取后删除
+    if (vttFile) {
+      try { unlinkSync(vttFile.path); } catch {}
+    }
 
     return this.materialsService.importFromVtt({
       vttContent,

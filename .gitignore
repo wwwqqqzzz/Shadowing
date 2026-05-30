@@ -42,6 +42,9 @@ miniprogram/project.private.config.json
 # OMC state
 .omc/
 
+# Temp uploaded media
+tmp/
+
 # Large media files (only keep mock/audio/)
 *.mp3
 *.wav
