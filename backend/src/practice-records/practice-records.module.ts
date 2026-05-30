@@ -8,5 +8,6 @@ import { PracticeRecord } from './entities/practice-record.entity';
   imports: [TypeOrmModule.forFeature([PracticeRecord])],
   controllers: [PracticeRecordsController],
   providers: [PracticeRecordsService],
+  exports: [PracticeRecordsService],
 })
 export class PracticeRecordsModule {}

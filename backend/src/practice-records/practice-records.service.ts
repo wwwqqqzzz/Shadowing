@@ -29,6 +29,23 @@ export class PracticeRecordsService {
     });
   }
 
+  async findBySentence(sentenceId: string): Promise<PracticeRecord | null> {
+    return this.recordRepo.findOne({
+      where: { sentence: { id: sentenceId } },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async updateFeedback(
+    id: string,
+    data: { score: number; errorWords: string },
+  ): Promise<void> {
+    await this.recordRepo.update(id, {
+      score: data.score,
+      errorWords: data.errorWords,
+    });
+  }
+
   async getMyStats(userId: string) {
     const totalSentences = await this.recordRepo.count({
       where: { user: { id: userId } },

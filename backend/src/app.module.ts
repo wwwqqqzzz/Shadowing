@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { MaterialsModule } from './materials/materials.module';
 import { SentencesModule } from './sentences/sentences.module';
 import { PracticeRecordsModule } from './practice-records/practice-records.module';
+import { AsrModule } from './asr/asr.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PracticeRecordsModule } from './practice-records/practice-records.modul
     MaterialsModule,
     SentencesModule,
     PracticeRecordsModule,
+    AsrModule,
   ],
 })
 export class AppModule {}
