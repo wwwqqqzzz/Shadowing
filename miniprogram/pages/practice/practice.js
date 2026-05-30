@@ -15,7 +15,9 @@ Page({
     loop: false,
     recording: false,
     recordPath: null,
-    playingBack: false
+    playingBack: false,
+    feedback: null,
+    showFeedback: false
   },
 
   async onLoad(options) {
@@ -28,6 +30,7 @@ Page({
     })
     this.recorder.onStop((res) => {
       this.setData({ recording: false, recordPath: res.tempFilePath })
+      this._evaluateRecording(res.tempFilePath)
     })
     this.recorder.onError((err) => {
       console.error('录音错误', err)
@@ -127,11 +130,12 @@ Page({
     ac.obeyMuteSwitch = false
     ac.playbackRate = this.data.speed
 
+    // 开发环境：所有音频通过后端静态路由播放
     const resolveAudio = (url) => {
       if (!url) return null
       if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('wxfile://')) return url
-      if (url.startsWith('/')) return url
-      return '/mock/audio/' + url
+      const filename = url.includes('/') ? url.split('/').pop() : url
+      return 'http://localhost:3000/audio/' + filename
     }
 
     if (sentence.audioUrl) {
@@ -181,7 +185,7 @@ Page({
 
   _goNext() {
     this._clearWait()
-    this.setData({ recordPath: null })
+    this.setData({ recordPath: null, feedback: null, showFeedback: false })
     this._destroyPlayback()
     const next = this.data.currentIndex + 1
     if (next < this.data.sentences.length) {
@@ -234,7 +238,7 @@ Page({
 
   onTapSentence(e) {
     this._clearWait()
-    this.setData({ recordPath: null })
+    this.setData({ recordPath: null, feedback: null, showFeedback: false })
     this._destroyPlayback()
     const index = Number(e.currentTarget.dataset.index)
     this._playSentence(index)
@@ -242,7 +246,7 @@ Page({
 
   onSkipPrev() {
     this._clearWait()
-    this.setData({ recordPath: null })
+    this.setData({ recordPath: null, feedback: null, showFeedback: false })
     this._destroyAudio()
     this._destroyPlayback()
     const idx = Math.max(0, this.data.currentIndex - 1)
@@ -251,7 +255,7 @@ Page({
 
   onSkipNext() {
     this._clearWait()
-    this.setData({ recordPath: null })
+    this.setData({ recordPath: null, feedback: null, showFeedback: false })
     this._destroyAudio()
     this._destroyPlayback()
     const next = this.data.currentIndex + 1
@@ -328,5 +332,28 @@ Page({
       this._playbackCtx = null
     }
     this.setData({ playingBack: false })
+  },
+
+  _evaluateRecording(tempFilePath) {
+    const sentence = this.data.sentences[this.data.currentIndex]
+    if (!sentence) return
+
+    wx.uploadFile({
+      url: 'http://localhost:3000/api/asr/evaluate',
+      filePath: tempFilePath,
+      name: 'audio',
+      formData: {
+        sentenceId: sentence.id,
+        language: 'en',
+        originalText: sentence.text,
+      },
+      success: (res) => {
+        const result = JSON.parse(res.data)
+        this.setData({ feedback: result, showFeedback: true })
+      },
+      fail: () => {
+        console.warn('评估失败（静默）')
+      },
+    })
   }
 })

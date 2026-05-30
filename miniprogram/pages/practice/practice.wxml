@@ -46,6 +46,20 @@
     <text class="finished-text" wx:if="{{status === 'finished'}}">练习完成</text>
   </view>
 
+  <!-- Feedback -->
+  <view class="feedback-area" wx:if="{{showFeedback && feedback}}">
+    <view class="feedback-row">
+      <text class="feedback-score {{feedback.score >= 80 ? 'score-high' : (feedback.score >= 60 ? 'score-mid' : 'score-low')}}">{{feedback.score}}</text>
+      <view class="feedback-words" wx:if="{{feedback.missingWords && feedback.missingWords.length > 0}}">
+        <text wx:for="{{feedback.missingWords}}" wx:key="*this" class="missing-tag">{{item}}</text>
+      </view>
+    </view>
+    <view class="feedback-texts">
+      <text class="feedback-recognized">你说的：{{feedback.recognizedText}}</text>
+      <text class="feedback-original">原句：{{feedback.originalText}}</text>
+    </view>
+  </view>
+
   <!-- Controls -->
   <view class="controls">
     <view class="ctrl-btn" bindtap="onSpeedChange">
