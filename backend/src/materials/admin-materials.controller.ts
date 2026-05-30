@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Put,
+  Patch,
   Delete,
   Param,
   Body,
@@ -55,5 +56,13 @@ export class AdminMaterialsController {
   @Delete(':id')
   async deleteMaterial(@Param('id') id: string) {
     return this.materialsService.deleteMaterial(id);
+  }
+
+  @Patch('sentences/:id')
+  async updateSentence(
+    @Param('id') id: string,
+    @Body() data: { order?: number; startTime?: number; endTime?: number; text?: string; audioUrl?: string },
+  ) {
+    return this.materialsService.updateSentence(id, data);
   }
 }

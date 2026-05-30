@@ -31,3 +31,19 @@ export const updateStatus = (id: string, status: string) =>
 
 export const deleteMaterial = (id: string) =>
   axios.delete(`${BASE}/admin/materials/${id}`)
+
+export interface Sentence {
+  id: string
+  order: number
+  startTime: number
+  endTime: number
+  text: string
+  translation?: string | null
+  audioUrl?: string | null
+}
+
+export const getSentences = (materialId: string) =>
+  axios.get<Sentence[]>(`${BASE}/materials/${materialId}/sentences`)
+
+export const updateSentence = (id: string, data: Partial<Pick<Sentence, 'startTime' | 'endTime' | 'text' | 'order' | 'audioUrl'>>) =>
+  axios.patch<Sentence>(`${BASE}/admin/materials/sentences/${id}`, data)

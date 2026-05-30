@@ -118,6 +118,13 @@ const MaterialList: React.FC = () => {
               下架
             </Button>
           )}
+          <Button
+            type="link"
+            size="small"
+            onClick={() => navigate(`/edit/${record.id}`)}
+          >
+            编辑句子
+          </Button>
           <Popconfirm
             title="确定删除该素材？"
             onConfirm={() => void handleDelete(record.id)}

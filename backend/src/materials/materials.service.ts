@@ -163,4 +163,16 @@ export class MaterialsService {
     await this.materialRepo.remove(material);
     return { success: true };
   }
+
+  async updateSentence(
+    id: string,
+    data: { order?: number; startTime?: number; endTime?: number; text?: string; audioUrl?: string },
+  ): Promise<Sentence> {
+    const sentence = await this.sentenceRepo.findOne({ where: { id } });
+    if (!sentence) {
+      throw new NotFoundException('Sentence not found');
+    }
+    Object.assign(sentence, data);
+    return this.sentenceRepo.save(sentence);
+  }
 }

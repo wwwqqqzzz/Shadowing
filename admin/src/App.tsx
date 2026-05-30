@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import MaterialList from './pages/MaterialList'
 import ImportMaterial from './pages/ImportMaterial'
+import SentenceEditor from './pages/SentenceEditor'
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MaterialList />} />
         <Route path="/import" element={<ImportMaterial />} />
+        <Route path="/edit/:materialId" element={<SentenceEditor />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
