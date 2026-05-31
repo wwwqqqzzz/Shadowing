@@ -52,6 +52,7 @@ export class AdminMaterialsController {
     @Body('title') title: string,
     @Body('source') source: string,
     @Body('level') level: string,
+    @Body('audioOffsetMs') audioOffsetMs: string,
     @UploadedFiles()
     files: {
       audioFile?: Express.Multer.File[];
@@ -64,7 +65,6 @@ export class AdminMaterialsController {
     const vttContent = vttFile ? readFileSync(vttFile.path, 'utf-8') : '';
     const audioFilename = audioFile?.filename ?? '';
 
-    // VTT 文件不需要持久化，读取后删除
     if (vttFile) {
       try { unlinkSync(vttFile.path); } catch {}
     }
@@ -75,6 +75,7 @@ export class AdminMaterialsController {
       title,
       source: source || 'Unknown',
       level: level || 'intermediate',
+      audioOffsetMs: audioOffsetMs ? parseInt(audioOffsetMs, 10) : 0,
     });
   }
 
@@ -89,6 +90,14 @@ export class AdminMaterialsController {
   @Delete(':id')
   async deleteMaterial(@Param('id') id: string) {
     return this.materialsService.deleteMaterial(id);
+  }
+
+  @Patch(':id/offset')
+  async updateOffset(
+    @Param('id') id: string,
+    @Body('audioOffsetMs') audioOffsetMs: number,
+  ) {
+    return this.materialsService.updateOffset(id, audioOffsetMs);
   }
 
   @Patch('sentences/:id')

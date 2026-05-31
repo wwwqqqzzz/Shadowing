@@ -36,6 +36,9 @@ export class Material {
   @Column({ nullable: true })
   source: string;
 
+  @Column({ default: 0 })
+  audioOffsetMs: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

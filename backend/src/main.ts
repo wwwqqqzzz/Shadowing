@@ -22,8 +22,8 @@ async function bootstrap() {
 
   const tmpAudioPath = resolve(dir, 'tmp');
   const mockAudioPath = resolve(dir, 'miniprogram', 'mock', 'audio');
-  app.useStaticAssets(tmpAudioPath, { prefix: '/audio/' });
-  app.useStaticAssets(mockAudioPath, { prefix: '/audio/' });
+  app.useStaticAssets(tmpAudioPath, { prefix: '/audio/', setHeaders: (res) => { res.setHeader('Cache-Control', 'no-store'); } });
+  app.useStaticAssets(mockAudioPath, { prefix: '/audio/', setHeaders: (res) => { res.setHeader('Cache-Control', 'no-store'); } });
 
   const port = process.env.PORT || 3000;
   await app.listen(port);

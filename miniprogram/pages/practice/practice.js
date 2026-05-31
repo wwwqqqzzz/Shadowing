@@ -23,6 +23,11 @@ Page({
   async onLoad(options) {
     this._currentAudio = null
     this._waitTimer = null
+    this._sentenceTimer = null
+    this._timeUpdateInterval = null
+    this._sentenceStartTime = null
+    this._pausedAt = null
+    this._audioCacheKey = Date.now()
 
     this.recorder = wx.getRecorderManager()
     this.recorder.onStart(() => {
@@ -50,12 +55,14 @@ Page({
         getMaterial(materialId),
         getSentences(materialId),
       ])
+      console.log('[onLoad] material.audioUrl=', material.audioUrl, 'material.audioOffsetMs=', material.audioOffsetMs)
+      console.log('[onLoad] sentences count=', sentences.length, 'first audioUrl=', sentences[0] && sentences[0].audioUrl, 'first text=', sentences[0] && sentences[0].text && sentences[0].text.substring(0, 30))
       this.setData({ material, sentences })
     } catch (err) {
       console.error('拉取失败，降级到本地 mock', err)
       const fallback = getMockMaterial('mock-001')
       this.setData({
-        material: { audioUrl: fallback.audioUrl, title: fallback.title },
+        material: { audioUrl: fallback.audioUrl, title: fallback.title, audioOffsetMs: fallback.audioOffsetMs || 0 },
         sentences: fallback.sentences,
       })
     }
@@ -63,6 +70,8 @@ Page({
 
   onUnload() {
     this._clearWait()
+    this._clearSentenceTimer()
+    this._clearTimeUpdateInterval()
     this.recorder.stop()
     this._destroyAudio()
     this._destroyPlayback()
@@ -70,20 +79,21 @@ Page({
 
   // ─── Destroy audio context ─────────────────────────────
 
+  _clearTimeUpdateInterval() {
+    if (this._timeUpdateInterval) {
+      clearInterval(this._timeUpdateInterval)
+      this._timeUpdateInterval = null
+    }
+  },
+
   _destroyAudio() {
-    this._clearTimeUpdate()
+    this._clearSentenceTimer()
+    this._clearTimeUpdateInterval()
     if (this._currentAudio) {
       this._currentAudio.stop()
       this._currentAudio.destroy()
       this._currentAudio = null
     }
-  },
-
-  _clearTimeUpdate() {
-    if (this._currentAudio && this._timeUpdateHandler) {
-      this._currentAudio.offTimeUpdate(this._timeUpdateHandler)
-    }
-    this._timeUpdateHandler = null
   },
 
   // ─── Sentence ended ────────────────────────────────────
@@ -123,53 +133,123 @@ Page({
   _playSentence(index) {
     this._clearWait()
     this._destroyAudio()
+    this._sentenceEndGuard = false
     const sentence = this.data.sentences[index]
     if (!sentence) return
+
+    console.log('[_playSentence] index=', index, 'audioUrl=', sentence.audioUrl, 'startTime=', sentence.startTime)
 
     const ac = wx.createInnerAudioContext()
     ac.obeyMuteSwitch = false
     ac.playbackRate = this.data.speed
 
-    // 开发环境：所有音频通过后端静态路由播放
-    const resolveAudio = (url) => {
+    const resolveUrl = (url) => {
       if (!url) return null
-      if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('wxfile://')) return url
-      const filename = url.includes('/') ? url.split('/').pop() : url
-      return 'http://localhost:3000/audio/' + filename
+      if (url.startsWith('http://') || url.startsWith('https://')) return url
+      if (url.startsWith('wxfile://')) return url
+      if (url.startsWith('/')) return url
+      return 'http://localhost:3000/audio/' + url
+    }
+
+    const offsetMs = (this.data.material && this.data.material.audioOffsetMs) || 0
+    const durationMs = sentence.endTime - sentence.startTime
+    let ended = false
+
+    const triggerEnd = () => {
+      if (ended) return
+      ended = true
+      if (this._sentenceEndGuard) return
+      this._sentenceEndGuard = true
+      this._clearSentenceTimer()
+      this._onSentenceEnd()
+    }
+
+    ac.onEnded(() => {
+      this._clearSentenceTimer()
+      triggerEnd()
+    })
+    ac.onError((res) => {
+      console.error('播放错误', res)
+      this._clearSentenceTimer()
+    })
+
+    const doPlay = (srcPath) => {
+      if (ended) return
+      ac.src = srcPath
+      ac.play()
+      this._currentAudio = ac
+      this._sentenceStartTime = Date.now()
+      this.setData({ playing: true, currentIndex: index, status: 'playing' })
     }
 
     if (sentence.audioUrl) {
-      ac.src = resolveAudio(sentence.audioUrl)
-      ac.onEnded(() => { this._onSentenceEnd() })
-    } else if (this.data.material && this.data.material.audioUrl) {
-      ac.src = resolveAudio(this.data.material.audioUrl)
-      ac.startTime = sentence.startTime / 1000
-
-      this._sentenceEnded = false
-      const onEnd = () => {
-        if (this._sentenceEnded) return
-        this._sentenceEnded = true
-        this._onSentenceEnd()
-      }
-
-      const checkEnd = () => {
-        if (ac.currentTime * 1000 >= sentence.endTime) {
-          ac.stop()
-          onEnd()
+      // Per-sentence file: download to local, then play
+      const remoteUrl = resolveUrl(sentence.audioUrl)
+      console.log('[_playSentence] MODE: download + play, url=', remoteUrl)
+      wx.downloadFile({
+        url: remoteUrl,
+        success: (res) => {
+          if (res.statusCode === 200) {
+            console.log('[_playSentence] downloaded, local path=', res.tempFilePath)
+            doPlay(res.tempFilePath)
+          } else {
+            console.error('下载失败, status=', res.statusCode)
+            triggerEnd()
+          }
+        },
+        fail: (err) => {
+          console.error('下载失败', err)
+          triggerEnd()
         }
-      }
-      ac.onTimeUpdate(checkEnd)
-      ac.onEnded(onEnd)
-      this._timeUpdateHandler = checkEnd
-      this._endHandler = onEnd
-    }
+      })
+    } else if (this.data.material && this.data.material.audioUrl) {
+      // Seek mode: play full audio from remote with startTime
+      const seekSec = (sentence.startTime + offsetMs) / 1000
+      const remoteUrl = resolveUrl(this.data.material.audioUrl)
+      console.log('[_playSentence] MODE: remote seek, url=', remoteUrl, 'seekSec=', seekSec)
 
-    ac.onError((res) => {
-      console.error('播放错误', res)
-    })
-    ac.play()
-    this._currentAudio = ac
-    this.setData({ playing: true, currentIndex: index, status: 'playing' })
+      ac.onPlay(() => {
+        if (ended) return
+        if (this._currentAudio !== ac) return
+        if (ac.currentTime < seekSec - 0.5) { ac.seek(seekSec) }
+        this._sentenceStartTime = Date.now()
+        this._startSentenceTimer(durationMs / this.data.speed + 200)
+      })
+      // Poll currentTime every 100ms — more reliable than onTimeUpdate on WeChat
+      this._clearTimeUpdateInterval()
+      this._timeUpdateInterval = setInterval(() => {
+        if (ended) return
+        if (this._currentAudio !== ac) return
+        try {
+          if (ac.currentTime >= (sentence.endTime + offsetMs) / 1000 - 0.05) { triggerEnd() }
+        } catch (e) { /* currentTime access may throw on some WeChat versions */ }
+      }, 100)
+      // 必须先设 src，再设 startTime，最后 play()（设 src 会重置 startTime）
+      if (ended) return
+      ac.src = remoteUrl
+      ac.startTime = seekSec
+      ac.play()
+      this._currentAudio = ac
+      this._sentenceStartTime = Date.now()
+      this.setData({ playing: true, currentIndex: index, status: 'playing' })
+    }
+  },
+
+  _startSentenceTimer(listenMs) {
+    this._clearSentenceTimer()
+    this._sentenceTimer = setTimeout(() => {
+      if (this._sentenceEndGuard) return
+      this._sentenceEndGuard = true
+      this._destroyAudio()
+      this._onSentenceEnd()
+    }, listenMs)
+  },
+
+  _clearSentenceTimer() {
+    if (this._sentenceTimer) {
+      clearTimeout(this._sentenceTimer)
+      this._sentenceTimer = null
+    }
   },
 
   // ─── Clear wait timer ──────────────────────────────────
@@ -217,11 +297,19 @@ Page({
       if (this._currentAudio) {
         this._currentAudio.pause()
       }
+      this._clearSentenceTimer()
+      this._pausedAt = Date.now()
       this.setData({ playing: false })
     } else {
-      // Resume current audio or replay from beginning
       if (this._currentAudio) {
         this._currentAudio.play()
+        const sentence = this.data.sentences[this.data.currentIndex]
+        if (sentence && this._sentenceStartTime && this._pausedAt && !sentence.audioUrl) {
+          const elapsed = this._pausedAt - this._sentenceStartTime
+          const total = (sentence.endTime - sentence.startTime) / this.data.speed
+          const remaining = total - elapsed + 200
+          if (remaining > 100) this._startSentenceTimer(remaining)
+        }
       } else {
         this._playSentence(currentIndex)
       }

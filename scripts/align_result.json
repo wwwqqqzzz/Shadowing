@@ -1,0 +1,330 @@
+{
+  "material": {
+    "audioUrl": "ep-211230.mp3",
+    "durationMs": 0
+  },
+  "sentences": [
+    {
+      "order": 1,
+      "text": "I'm Neil. And I'm Sam. Over the past 18 months, we've heard a lot about the human  immune system  - the cells in our bodies that fight diseases like coronavirus.",
+      "startTime": 17860,
+      "endTime": 27360,
+      "confidence": 0.889
+    },
+    {
+      "order": 2,
+      "text": "We know that in humans the blood stream carries immune cells around our body. But what about trees and plants?",
+      "startTime": 27360,
+      "endTime": 35720,
+      "confidence": 0.826
+    },
+    {
+      "order": 3,
+      "text": "They don't have blood, so how do they protect themselves? That's a good question, Sam, and the answer involves memory.",
+      "startTime": 36180,
+      "endTime": 41760,
+      "confidence": 0.834
+    },
+    {
+      "order": 4,
+      "text": "Us, humans, store memories in our brain, but our body also remembers things, including stressful situations from the past, which it stores in our genes.",
+      "startTime": 42400,
+      "endTime": 51480,
+      "confidence": 1.0
+    },
+    {
+      "order": 5,
+      "text": "The information gets passed on to our children genetically. But surely trees don't have memories, Neil!",
+      "startTime": 52020,
+      "endTime": 57760,
+      "confidence": 1.0
+    },
+    {
+      "order": 6,
+      "text": "I mean, do you think a tree can remember being young or what it was doing last year?",
+      "startTime": 57980,
+      "endTime": 62780,
+      "confidence": 1.0
+    },
+    {
+      "order": 7,
+      "text": "Well, not exactly, but trees grow rings - a layer of wood for each year of growth. That could be a kind of memory.",
+      "startTime": 63040,
+      "endTime": 70320,
+      "confidence": 1.0
+    },
+    {
+      "order": 8,
+      "text": "In this programme, we'll be asking whether trees can remember - and if so, does it make them stronger and better able to fight disease?",
+      "startTime": 70840,
+      "endTime": 78540,
+      "confidence": 1.0
+    },
+    {
+      "order": 9,
+      "text": "But before that I have a question for you, Sam. As I said, trees grow a new ring every year and by counting them we can estimate their age.",
+      "startTime": 79140,
+      "endTime": 88220,
+      "confidence": 1.0
+    },
+    {
+      "order": 10,
+      "startTime": 88760,
+      "endTime": 97240,
+      "text": "One of Earth's longest living trees is The Great Bristlecone Pine, found on the west coast of America. But how long can these trees live?",
+      "confidence": 0.848
+    },
+    {
+      "order": 11,
+      "startTime": 97740,
+      "endTime": 105140,
+      "text": "Is it a) over 1,000 years? b) over 3,000 years? or c) over 5,000 years?",
+      "confidence": 0.848
+    },
+    {
+      "order": 12,
+      "text": "I'll say b) over 3,000 years. Unlike us, trees don't have blood and bones to protect them from outside attacks, so how exactly does a tree's immune system work?",
+      "startTime": 115660,
+      "endTime": 123720,
+      "confidence": 0.759
+    },
+    {
+      "order": 13,
+      "text": "That's what BBC World Service programme, CrowdScience, asked bioscientist, Jurriaan Ton.",
+      "startTime": 124100,
+      "endTime": 129620,
+      "confidence": 0.615
+    },
+    {
+      "order": 14,
+      "text": "Here's what he said: Jurriaan Ton Plants in particular need to have a very efficient immune system for two important reasons.",
+      "startTime": 130140,
+      "endTime": 136820,
+      "confidence": 0.857
+    },
+    {
+      "order": 15,
+      "text": "Firstly, they sit at the bottom of the  food chain  so there are a lot of  opportunistic  organisms out there, including insect herbivores and microbial pathogens who want to tap into that biochemical energy that is stored in plants.",
+      "startTime": 136820,
+      "endTime": 150120,
+      "confidence": 0.865
+    },
+    {
+      "order": 16,
+      "text": "The other reason is plants are rooted to the ground - they cannot escape from the stressful conditions in their environment.",
+      "startTime": 150640,
+      "endTime": 157140,
+      "confidence": 1.0
+    },
+    {
+      "order": 17,
+      "text": "It's hard for trees to protect themselves. Unlike animals, they can't run away, and they're at the bottom of the  food chain  - the plants and animals linked in a chain of eating weaker things and then being eaten by stronger ones.",
+      "startTime": 158500,
+      "endTime": 172640,
+      "confidence": 0.966
+    },
+    {
+      "order": 18,
+      "text": "Rabbits eat grass and, in turn, are eaten by foxes.",
+      "startTime": 172900,
+      "endTime": 176400,
+      "confidence": 1.0
+    },
+    {
+      "order": 19,
+      "text": "If you are at the bottom of the food chain , everything wants to eat you, including  opportunistic  animals.",
+      "startTime": 176800,
+      "endTime": 182680,
+      "confidence": 0.765
+    },
+    {
+      "order": 20,
+      "text": "If something is  opportunistic , it takes advantage of a situation to gain some benefit for itself.",
+      "startTime": 183240,
+      "endTime": 189360,
+      "confidence": 0.938
+    },
+    {
+      "order": 21,
+      "text": "Tree leaves are opportunities for hungry insects and caterpillars to eat.",
+      "startTime": 189360,
+      "endTime": 193860,
+      "confidence": 1.0
+    },
+    {
+      "order": 22,
+      "text": "So, trees need immunity because they're under attack, either from disease or from living things wanting to eat them. But what about memory, Sam?",
+      "startTime": 194260,
+      "endTime": 202500,
+      "confidence": 1.0
+    },
+    {
+      "order": 23,
+      "text": "If trees can remember stress - types of insects that eat it, for example - they might be better prepared in future.",
+      "startTime": 203020,
+      "endTime": 209320,
+      "confidence": 0.952
+    },
+    {
+      "order": 24,
+      "text": "For me, stress is a work deadline or moving house, but for trees it's more basic, something like not getting enough water.",
+      "startTime": 209740,
+      "endTime": 217120,
+      "confidence": 1.0
+    },
+    {
+      "order": 25,
+      "text": "Dr Estrella Luna-Diez believes trees record stress in their rings.",
+      "startTime": 217120,
+      "endTime": 221460,
+      "confidence": 0.818
+    },
+    {
+      "order": 26,
+      "text": "A small ring, showing that the tree didn't grow much that year, indicates some outside stress.",
+      "startTime": 221820,
+      "endTime": 227920,
+      "confidence": 1.0
+    },
+    {
+      "order": 27,
+      "startTime": 228340,
+      "endTime": 237840,
+      "text": "She explained more to BBC World Service programme, CrowdScience: Estrella Luna-Diez Our hypothesis would be that, depending on the level of that stress",
+      "confidence": 0.841
+    },
+    {
+      "order": 28,
+      "startTime": 238120,
+      "endTime": 246500,
+      "text": "if it was a really long-lasting drought of a few years, then maybe the tree can remember it for a long time",
+      "confidence": 0.841
+    },
+    {
+      "order": 29,
+      "startTime": 246500,
+      "endTime": 249760,
+      "text": "because it needs to adapt to that hostile environment.",
+      "confidence": 0.841
+    },
+    {
+      "order": 30,
+      "startTime": 250400,
+      "endTime": 260500,
+      "text": "Now, maybe the hypothesis would be the other way around, maybe if it was a very dry July for instance, maybe the tree is not even that bothered",
+      "confidence": 0.814
+    },
+    {
+      "order": 31,
+      "startTime": 260760,
+      "endTime": 268880,
+      "text": "and then it forgets within one year because that memory of stress is gonna be holding it back on its growth, for instance.",
+      "confidence": 0.814
+    },
+    {
+      "order": 32,
+      "text": "Dr Luna-Diez has a  hypothesis  - an idea that explains how or why something happens which has yet to be tested to see if it's correct.",
+      "startTime": 269860,
+      "endTime": 278740,
+      "confidence": 0.875
+    },
+    {
+      "order": 33,
+      "text": "Her hypothesis is that trees remember stressful outside events, something like a  drought  - a long period of time with little or no rain.",
+      "startTime": 279380,
+      "endTime": 287940,
+      "confidence": 0.917
+    },
+    {
+      "order": 34,
+      "text": "For a tree which has lived for hundreds of years it might be useful to remember that 1947 was a very dry summer.",
+      "startTime": 288440,
+      "endTime": 295120,
+      "confidence": 1.0
+    },
+    {
+      "order": 35,
+      "text": "On the other hand, maybe that stressful year is best forgotten.",
+      "startTime": 295440,
+      "endTime": 298700,
+      "confidence": 0.833
+    },
+    {
+      "order": 36,
+      "text": "Maybe the tree is not bothered - not worried or concerned because it's not important to it.",
+      "startTime": 299200,
+      "endTime": 304420,
+      "confidence": 0.857
+    },
+    {
+      "order": 37,
+      "text": "So, trees do have memories - but they don't let it get them stressed!",
+      "startTime": 304420,
+      "endTime": 308440,
+      "confidence": 1.0
+    },
+    {
+      "order": 38,
+      "text": "Maybe that's the secret to a long life! But what's the answer to your question, Neil?",
+      "startTime": 308900,
+      "endTime": 313180,
+      "confidence": 1.0
+    },
+    {
+      "order": 39,
+      "text": "Ah yes, I asked you how long Earth's oldest trees, Great Bristlecone Pines, can live. You were wrong, I'm afraid, Sam.",
+      "startTime": 313360,
+      "endTime": 319320,
+      "confidence": 0.7
+    },
+    {
+      "order": 40,
+      "text": "They live even longer - over 5,000 years, in fact - all the way back to the Bronze Age.",
+      "startTime": 325080,
+      "endTime": 330360,
+      "confidence": 1.0
+    },
+    {
+      "order": 41,
+      "text": "What memories those trees must have - if only they could speak!",
+      "startTime": 330360,
+      "endTime": 334120,
+      "confidence": 1.0
+    },
+    {
+      "order": 42,
+      "text": "Right, let's recap the vocabulary we've learned, starting with  immune system  - the body's way of fighting infection and disease.",
+      "startTime": 335080,
+      "endTime": 342580,
+      "confidence": 0.889
+    },
+    {
+      "order": 43,
+      "text": "A  food chain  describes the ways plants and animals get eaten and eat each other.",
+      "startTime": 342840,
+      "endTime": 347280,
+      "confidence": 0.714
+    },
+    {
+      "order": 44,
+      "text": "Opportunistic  people take advantage of a situation to get some benefit for themselves.",
+      "startTime": 347520,
+      "endTime": 352060,
+      "confidence": 0.923
+    },
+    {
+      "order": 45,
+      "text": "A  hypothesis  is an idea to explain how or why something happens that hasn't been tested to see if it's correct.",
+      "startTime": 352660,
+      "endTime": 359280,
+      "confidence": 0.9
+    },
+    {
+      "order": 46,
+      "text": "A  drought  is a long period of time with little or no rain. And finally, if you're  not bothered about something , you're not worried because it's not important to you.",
+      "startTime": 359280,
+      "endTime": 368860,
+      "confidence": 0.852
+    }
+  ]
+}

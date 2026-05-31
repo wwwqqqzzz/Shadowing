@@ -45,6 +45,7 @@ export class MaterialsService {
       .addSelect('m.coverUrl', 'coverUrl')
       .addSelect('m.audioUrl', 'audioUrl')
       .addSelect('m.durationMs', 'durationMs')
+      .addSelect('m.audioOffsetMs', 'audioOffsetMs')
       .addSelect('m.status', 'status')
       .addSelect('m.source', 'source')
       .addSelect('m.createdAt', 'createdAt')
@@ -70,6 +71,7 @@ export class MaterialsService {
       coverUrl: row.coverUrl,
       audioUrl: row.audioUrl,
       durationMs: Number(row.durationMs),
+      audioOffsetMs: Number(row.audioOffsetMs || 0),
       status: row.status,
       source: row.source,
       createdAt: row.createdAt,
@@ -102,6 +104,7 @@ export class MaterialsService {
     title: string;
     source: string;
     level: string;
+    audioOffsetMs?: number;
   }): Promise<{
     materialId: string;
     sentenceCount: number;
@@ -117,6 +120,7 @@ export class MaterialsService {
       audioUrl: params.audioFilename,
       source: params.source,
       durationMs,
+      audioOffsetMs: params.audioOffsetMs || 0,
       status: 'draft',
       sentences: sentences.map((s, i) =>
         this.sentenceRepo.create({
@@ -153,6 +157,19 @@ export class MaterialsService {
     material.status = status;
     const saved = await this.materialRepo.save(material);
     return { id: saved.id, status: saved.status };
+  }
+
+  async updateOffset(
+    id: string,
+    audioOffsetMs: number,
+  ): Promise<{ id: string; audioOffsetMs: number }> {
+    const material = await this.materialRepo.findOne({ where: { id } });
+    if (!material) {
+      throw new NotFoundException('Material not found');
+    }
+    material.audioOffsetMs = audioOffsetMs;
+    const saved = await this.materialRepo.save(material);
+    return { id: saved.id, audioOffsetMs: saved.audioOffsetMs };
   }
 
   async deleteMaterial(id: string): Promise<{ success: true }> {

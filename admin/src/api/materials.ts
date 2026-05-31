@@ -9,6 +9,7 @@ export interface Material {
   level: 'beginner' | 'intermediate' | 'advanced'
   sentenceCount: number
   durationMs: number
+  audioOffsetMs: number
   status: 'draft' | 'published'
   createdAt: string
 }
@@ -47,3 +48,6 @@ export const getSentences = (materialId: string) =>
 
 export const updateSentence = (id: string, data: Partial<Pick<Sentence, 'startTime' | 'endTime' | 'text' | 'order' | 'audioUrl'>>) =>
   axios.patch<Sentence>(`${BASE}/admin/materials/sentences/${id}`, data)
+
+export const updateMaterialOffset = (id: string, offsetMs: number) =>
+  axios.patch<{ id: string; audioOffsetMs: number }>(`${BASE}/admin/materials/${id}/offset`, { audioOffsetMs: offsetMs })

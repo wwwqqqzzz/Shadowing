@@ -40,52 +40,56 @@ function stripVttTags(text: string): string {
 }
 
 function shouldDrop(cue: ParsedCue): boolean {
-  if (cue.startTime < 5000) return true;
   if (/translator:|reviewer:/i.test(cue.text)) return true;
-  if (/\[.*\]/.test(cue.text) && !/[a-zA-Z]{3,}/.test(cue.text)) return true;
+  if (/^\([^)]*\)$/.test(cue.text)) return true;
+  if (/^this is \d+ minute english/i.test(cue.text)) return true;
+  if (/^hello\.?\s*this is/i.test(cue.text)) return true;
+  if (/^greetings?\s+(followers?|everyone|everybody|ladies|gentlemen)/i.test(cue.text)) return true;
+  if (/^and settle in[.!]?$/i.test(cue.text)) return true;
+  if (/^(hello\.?\s*)?i'm (neil|sam|rob|catherine)\.?\s*(and i'm (neil|sam|rob|catherine)\.?\s*)?$/i.test(cue.text)) return true;
   return false;
 }
 
-function mergeConsecutive(cues: ParsedCue[]): ParsedCue[] {
-  if (cues.length === 0) return [];
-  const result: ParsedCue[] = [{ ...cues[0] }];
+const MAX_SENTENCE_WORDS = 25;
+const MIN_SENTENCE_WORDS = 4;
 
-  for (let i = 1; i < cues.length; i++) {
-    const prev = result[result.length - 1];
-    const curr = cues[i];
-    if (Math.abs(prev.endTime - curr.startTime) <= 50) {
-      prev.endTime = curr.endTime;
-      prev.text = (prev.text + ' ' + curr.text).replace(/\s+/g, ' ').trim();
-    } else {
-      result.push({ ...curr });
-    }
-  }
-  return result;
+function endsWithSentenceBoundary(text: string): boolean {
+  return /[.!?]["')\]]*$/.test(text.trim());
 }
 
-function absorbShort(cues: ParsedCue[]): ParsedCue[] {
-  if (cues.length <= 1) return cues;
-  const result: ParsedCue[] = [];
-  const mutableCues = cues.map((c) => ({ ...c }));
+/**
+ * Merge VTT cues into proper sentences based on punctuation boundaries.
+ * VTT cues are split by screen display lines, not by grammar.
+ * We merge forward until we hit a sentence-ending punctuation mark,
+ * then start a new sentence.
+ */
+function mergeBySentence(cues: ParsedCue[]): ParsedCue[] {
+  if (cues.length === 0) return [];
 
-  for (let i = 0; i < mutableCues.length; i++) {
-    if (
-      i < mutableCues.length - 1 &&
-      mutableCues[i].text.split(/\s+/).filter(Boolean).length < 4
-    ) {
-      mutableCues[i + 1].text = (
-        mutableCues[i].text +
-        ' ' +
-        mutableCues[i + 1].text
-      )
+  const sentences: ParsedCue[] = [];
+  let current: ParsedCue = { ...cues[0] };
+
+  for (let i = 1; i < cues.length; i++) {
+    const cue = cues[i];
+    const currentWords = current.text.split(/\s+/).filter(Boolean).length;
+    const nextWords = cue.text.split(/\s+/).filter(Boolean).length;
+
+    if (endsWithSentenceBoundary(current.text) && currentWords >= MIN_SENTENCE_WORDS) {
+      sentences.push(current);
+      current = { ...cue };
+    } else if (currentWords + nextWords > MAX_SENTENCE_WORDS) {
+      sentences.push(current);
+      current = { ...cue };
+    } else {
+      current.endTime = cue.endTime;
+      current.text = (current.text + ' ' + cue.text)
         .replace(/\s+/g, ' ')
         .trim();
-      mutableCues[i + 1].startTime = mutableCues[i].startTime;
-    } else {
-      result.push({ ...mutableCues[i] });
     }
   }
-  return result;
+
+  sentences.push(current);
+  return sentences;
 }
 
 export function parseVtt(vttContent: string): VttParseResult {
@@ -156,9 +160,7 @@ export function parseVtt(vttContent: string): VttParseResult {
     }
   }
 
-  const filtered = rawCues.filter((c) => !shouldDrop(c));
-  const merged = mergeConsecutive(filtered);
-  const sentences = absorbShort(merged);
+  const sentences = mergeBySentence(rawCues).filter((c) => !shouldDrop(c));
 
   const durationMs =
     sentences.length > 0 ? sentences[sentences.length - 1].endTime : 0;

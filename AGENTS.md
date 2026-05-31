@@ -67,6 +67,8 @@ Shadowing/
 | 跳转不存在页面 | request.js 导航到未注册的 /pages/login/login | `request.js:18` |
 | 孤立模块 | SentencesService 被导出但从未被使用 | `sentences/` 整个目录 |
 | 重复代码 | scripts/import-material.ts 内联了 vtt-parser 完整实现 | `scripts/import-material.ts` |
+| ⚠️ 微信 onTimeUpdate 不可靠 | 不能用 `ac.onTimeUpdate()` 做播放边界检测——iOS 远程音频可能不触发或 currentTime 返回错误值。必须用 `setInterval(100ms)` 轮询 | `practice.js` seek 模式 |
+| ⚠️ Timer padding 是绝对值陷阱 | 后备 timer 不要加超过 200ms 的固定 padding。1s 句子 + 3s padding = 300% 误差，用户能听到下句内容 | `practice.js _startSentenceTimer` |
 
 ## UNIQUE STYLES
 
