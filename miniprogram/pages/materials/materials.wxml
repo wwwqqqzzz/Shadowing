@@ -15,8 +15,13 @@
         <text wx:if="{{!showSearch}}">搜索</text>
         <text wx:else>收起</text>
       </view>
-      <view class="fav-toggle {{filters.favOnly ? 'fav-active' : ''}}" bindtap="onToggleFavOnly">
-        <text>{{filters.favOnly ? '♥ 收藏中' : '♥ 收藏'}}</text>
+      <view class="filter-toggle-row">
+        <view class="fav-toggle {{filters.favOnly ? 'fav-active' : ''}}" bindtap="onFilterChange" data-type="favOnly" data-value="true">
+          <text>♥ 收藏</text>
+        </view>
+        <view class="completed-toggle {{filters.completed ? 'completed-active' : ''}}" bindtap="onFilterChange" data-type="completed" data-value="true">
+          <text>✓ 已完成</text>
+        </view>
       </view>
     </view>
 
@@ -80,6 +85,7 @@
         wx:for="{{filtered}}"
         wx:key="id"
         data-id="{{item.id}}"
+        data-title="{{item.title}}"
         data-favorited="{{item.isFavorited}}"
         bindtap="onTapMaterial"
         hover-class="card-tap"

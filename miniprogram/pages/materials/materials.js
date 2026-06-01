@@ -12,6 +12,7 @@ Page({
       level: '',
       duration: '',
       favOnly: false,
+      completed: false,
     },
     searchKeyword: '',
     showSearch: false,
@@ -59,7 +60,7 @@ Page({
 
   applyFilters() {
     let list = [...this.data.materials]
-    const { accent, level, duration, favOnly } = this.data.filters
+    const { accent, level, duration, favOnly, completed } = this.data.filters
     const keyword = this.data.searchKeyword.trim()
 
     if (accent) list = list.filter(m => m.accent === accent)
@@ -68,6 +69,7 @@ Page({
     if (duration === 'medium') list = list.filter(m => m.durationMs >= 300000 && m.durationMs < 900000)
     if (duration === 'long') list = list.filter(m => m.durationMs >= 900000)
     if (favOnly) list = list.filter(m => m.isFavorited)
+    if (completed) list = list.filter(m => m._progressPercent >= 95)
     if (keyword) list = list.filter(m =>
       m.title.toLowerCase().includes(keyword.toLowerCase()) ||
       (m.source || '').toLowerCase().includes(keyword.toLowerCase())
@@ -79,18 +81,13 @@ Page({
   onFilterChange(e) {
     const { type, value } = e.currentTarget.dataset
     const filters = { ...this.data.filters }
-    if (filters[type] === value) {
+    if (type === 'completed' || type === 'favOnly') {
+      filters[type] = !filters[type]
+    } else if (filters[type] === value) {
       filters[type] = ''
     } else {
       filters[type] = value
     }
-    this.setData({ filters })
-    this.applyFilters()
-  },
-
-  onToggleFavOnly() {
-    const filters = { ...this.data.filters }
-    filters.favOnly = !filters.favOnly
     this.setData({ filters })
     this.applyFilters()
   },
@@ -130,7 +127,9 @@ Page({
   },
 
   onTapMaterial(e) {
-    const { id } = e.currentTarget.dataset
-    wx.navigateTo({ url: `/pages/practice/practice?materialId=${id}` })
+    const { id, title } = e.currentTarget.dataset
+    wx.navigateTo({
+      url: `/pages/practice/practice?materialId=${id}&materialTitle=${encodeURIComponent(title || '')}`
+    })
   },
 })

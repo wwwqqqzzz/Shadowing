@@ -33,6 +33,11 @@ page {
   font-size: 24rpx;
 }
 
+.filter-toggle-row {
+  display: flex;
+  gap: 12rpx;
+}
+
 .fav-toggle {
   font-size: 24rpx;
   color: #666;
@@ -44,6 +49,19 @@ page {
 .fav-active {
   color: #e8a87c;
   background: rgba(232, 168, 124, 0.15);
+}
+
+.completed-toggle {
+  font-size: 24rpx;
+  color: #666;
+  padding: 10rpx 24rpx;
+  background: #1a1a1a;
+  border-radius: 99rpx;
+}
+
+.completed-active {
+  color: #a8e6cf;
+  background: rgba(168, 230, 207, 0.15);
 }
 
 /* ─── Search bar ──────────────────────────────────────── */

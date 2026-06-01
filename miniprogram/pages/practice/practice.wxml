@@ -25,14 +25,29 @@
     </view>
   </view>
 
+  <!-- Finished overlay -->
+  <view wx:if="{{status === 'finished' && finishedData}}" class="finished-wrap">
+    <text class="finished-emoji">🎉</text>
+    <text class="finished-title">练习完成</text>
+    <text class="finished-material">{{finishedData.title}}</text>
+    <view class="finished-stats">
+      <text class="finished-stat-main">{{finishedData.total}} 句  ·  {{finishedData.durationText}}</text>
+      <text wx:if="{{finishedData.showScore}}" class="finished-stat-score">平均 {{finishedData.avgScore}} 分</text>
+    </view>
+    <view class="finished-buttons">
+      <view class="btn-restart" bindtap="onTapRestart" hover-class="btn-tap">重新练</view>
+      <view class="btn-back" bindtap="onTapBack" hover-class="btn-tap">返回</view>
+    </view>
+  </view>
+
   <!-- Top bar: title + progress -->
-  <view class="top-bar">
+  <view class="top-bar" wx:if="{{status !== 'finished'}}">
     <text class="title-text">{{material.title}}</text>
     <text class="progress-label">{{currentIndex + 1}} / {{sentences.length}}</text>
   </view>
 
   <!-- Subtitles -->
-  <view class="subtitle-wrapper">
+  <view class="subtitle-wrapper" wx:if="{{status !== 'finished'}}">
     <scroll-view class="subtitle-area" scroll-y scroll-into-view="s-{{currentIndex}}" scroll-with-animation bindtap="onTapSubtitleBg">
       <view
         wx:for="{{sentences}}"
@@ -48,8 +63,8 @@
     </scroll-view>
   </view>
 
-  <!-- Wait indicator or finished text -->
-  <view class="status-area">
+  <!-- Wait indicator -->
+  <view class="status-area" wx:if="{{status !== 'finished'}}">
     <view wx:if="{{status === 'waiting' || recording}}" class="waiting-container">
       <view class="wait-dots" wx:if="{{!recording}}">
         <view class="wait-dot"></view>
@@ -69,11 +84,10 @@
         </view>
       </view>
     </view>
-    <text class="finished-text" wx:if="{{status === 'finished'}}">练习完成</text>
   </view>
 
   <!-- Feedback -->
-  <view class="feedback-area" wx:if="{{showFeedback && feedback}}">
+  <view class="feedback-area" wx:if="{{showFeedback && feedback && status !== 'finished'}}">
     <view class="feedback-row">
       <text class="feedback-score {{feedback.score >= 80 ? 'score-high' : (feedback.score >= 60 ? 'score-mid' : 'score-low')}}">{{feedback.score}}</text>
       <view class="feedback-words" wx:if="{{feedback.missingWords && feedback.missingWords.length > 0}}">
@@ -87,7 +101,7 @@
   </view>
 
   <!-- Controls -->
-  <view class="controls">
+  <view class="controls" wx:if="{{status !== 'finished'}}">
     <view class="ctrl-btn" bindtap="onSpeedChange">
       <text class="speed-label">{{speed}}x</text>
     </view>

@@ -19,10 +19,10 @@ Page({
       ])
 
       let heroState = 'start'
-      if (progress && progress.progressPercent < 95) {
-        heroState = 'continue'
+      if (progress && progress.progressPercent >= 95) {
+        heroState = 'replay'
       } else if (progress) {
-        heroState = 'recommend'
+        heroState = 'continue'
       }
 
       this.setData({
@@ -41,9 +41,19 @@ Page({
 
   onTapHero() {
     const { heroState, lastProgress } = this.data
-    if (heroState === 'continue' && lastProgress) {
+    if (!lastProgress) {
+      wx.switchTab({ url: '/pages/materials/materials' })
+      return
+    }
+    const id = lastProgress.material.id
+    const title = encodeURIComponent(lastProgress.material.title || '')
+    if (heroState === 'continue') {
       wx.navigateTo({
-        url: `/pages/practice/practice?materialId=${lastProgress.material.id}&startOrder=${lastProgress.lastSentenceOrder}`,
+        url: `/pages/practice/practice?materialId=${id}&startOrder=${lastProgress.lastSentenceOrder}&materialTitle=${title}`,
+      })
+    } else if (heroState === 'replay') {
+      wx.navigateTo({
+        url: `/pages/practice/practice?materialId=${id}&startOrder=1&materialTitle=${title}`,
       })
     } else {
       wx.switchTab({ url: '/pages/materials/materials' })

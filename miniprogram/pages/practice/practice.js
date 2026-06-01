@@ -1,6 +1,7 @@
 const { getMockMaterial } = require('../../mock/data')
 const { getMaterial, getSentences, createPracticeRecord, saveProgress } = require('../../utils/api')
 const { isLoggedIn, login } = require('../../utils/auth')
+const { formatDuration } = require('../../utils/format')
 
 const WAIT_MS = 2500
 const SPEEDS = [0.5, 0.8, 1, 1.25, 1.5, 2]
@@ -22,6 +23,9 @@ Page({
     showFeedback: false,
     showModeModal: false,
     practiceMode: 'free',
+    practiceStartTime: 0,
+    sessionScores: [],
+    finishedData: null,
     modeModes: [
       { key: 'free', icon: '🎧', name: '自由模式', desc: '播完自动进下一句，不录音，适合通勤听' },
       { key: 'auto', icon: '🎙', name: '自动录音', desc: '播完自动录音评分，适合认真练习' },
@@ -38,6 +42,7 @@ Page({
     this._pausedAt = null
     this._audioCacheKey = Date.now()
     this._autoNextTimer = null
+    this.setData({ practiceStartTime: Date.now() })
 
     const storedMode = wx.getStorageSync('practiceMode')
     if (storedMode) {
@@ -165,7 +170,21 @@ Page({
 
     if (isLast) {
       saveProgress(this.data.materialId, 1, this.data.sentences.length)
-      this.setData({ status: 'finished' })
+      const durationMs = Date.now() - this.data.practiceStartTime
+      const scores = this.data.sessionScores
+      const avgScore = scores.length > 0
+        ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+        : null
+      this.setData({
+        status: 'finished',
+        finishedData: {
+          title: (this.data.material && this.data.material.title) || '',
+          total: this.data.sentences.length,
+          durationText: formatDuration(durationMs),
+          avgScore,
+          showScore: this.data.practiceMode === 'auto' && avgScore != null,
+        },
+      })
       return
     }
 
@@ -350,9 +369,7 @@ Page({
   onTogglePlay() {
     const { status, currentIndex } = this.data
 
-    // Finished → restart from beginning
     if (status === 'finished') {
-      this._playSentence(0)
       return
     }
 
@@ -439,6 +456,22 @@ Page({
     this.setData({ loop: !this.data.loop })
   },
 
+  onTapRestart() {
+    this.setData({
+      currentIndex: 0,
+      status: 'idle',
+      sessionScores: [],
+      practiceStartTime: Date.now(),
+      finishedData: null,
+    })
+    saveProgress(this.data.materialId, 1, this.data.sentences.length)
+    this._playSentence(0)
+  },
+
+  onTapBack() {
+    wx.navigateBack()
+  },
+
   // ─── Recording ──────────────────────────────────────────
 
   onToggleRecord() {
@@ -516,6 +549,9 @@ Page({
       success: (res) => {
         const result = JSON.parse(res.data)
         this.setData({ feedback: result, showFeedback: true })
+        if (this.data.practiceMode === 'auto' && result.score != null) {
+          this.setData({ sessionScores: [...this.data.sessionScores, result.score] })
+        }
       },
       fail: () => {
         console.warn('评估失败（静默）')

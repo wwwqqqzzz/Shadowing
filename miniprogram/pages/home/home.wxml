@@ -39,16 +39,16 @@
         </view>
       </block>
 
-      <!-- recommend 状态 -->
-      <block wx:elif="{{heroState === 'recommend'}}">
-        <text class="hero-title">今日推荐</text>
+      <!-- replay 状态 -->
+      <block wx:elif="{{heroState === 'replay'}}">
+        <text class="hero-title">上次已练完</text>
         <text class="hero-material">{{lastProgress.material.title}}</text>
         <view class="hero-tags">
-          <text class="hero-tag">{{lastProgress.material.level === 'beginner' ? '入门' : lastProgress.material.level === 'intermediate' ? '中级' : '高级'}}</text>
-          <text class="hero-tag">{{lastProgress.material.accent === 'american' ? '美式' : lastProgress.material.accent === 'british' ? '英式' : lastProgress.material.accent === 'australian' ? '澳式' : lastProgress.material.accent}}</text>
+          <text class="hero-tag">{{lastProgress.totalSentences}} 句</text>
+          <text class="hero-tag">从头开始</text>
         </view>
         <view class="hero-cta">
-          <text class="hero-cta-text">▶ 开始练</text>
+          <text class="hero-cta-text">↺ 重新练</text>
         </view>
       </block>
 
