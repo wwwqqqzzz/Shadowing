@@ -1,12 +1,12 @@
 /* ─── Base ────────────────────────────────────────────── */
 
 page {
-  background: #0f0f0f;
+  background: var(--color-bg-base);
 }
 
 .container {
   min-height: 100vh;
-  background: #0f0f0f;
+  background: var(--color-bg-base);
 }
 
 /* ─── Filter top bar ─────────────────────────────────── */
@@ -23,9 +23,9 @@ page {
   align-items: center;
   gap: 8rpx;
   font-size: 26rpx;
-  color: #888;
+  color: var(--color-text-secondary);
   padding: 10rpx 20rpx;
-  background: #1a1a1a;
+  background: var(--color-bg-elevated);
   border-radius: 99rpx;
 }
 
@@ -40,28 +40,28 @@ page {
 
 .fav-toggle {
   font-size: 24rpx;
-  color: #666;
+  color: var(--color-text-secondary);
   padding: 10rpx 24rpx;
-  background: #1a1a1a;
+  background: var(--color-bg-elevated);
   border-radius: 99rpx;
 }
 
 .fav-active {
-  color: #e8a87c;
-  background: rgba(232, 168, 124, 0.15);
+  color: var(--color-warning);
+  background: rgba(201, 168, 76, 0.15);
 }
 
 .completed-toggle {
   font-size: 24rpx;
-  color: #666;
+  color: var(--color-text-secondary);
   padding: 10rpx 24rpx;
-  background: #1a1a1a;
+  background: var(--color-bg-elevated);
   border-radius: 99rpx;
 }
 
 .completed-active {
-  color: #a8e6cf;
-  background: rgba(168, 230, 207, 0.15);
+  color: var(--color-brand);
+  background: rgba(125, 206, 160, 0.15);
 }
 
 /* ─── Search bar ──────────────────────────────────────── */
@@ -71,12 +71,12 @@ page {
 }
 
 .search-input {
-  background: #1a1a1a;
-  color: #fff;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
   font-size: 28rpx;
   padding: 16rpx 24rpx;
   border-radius: 16rpx;
-  border: 1rpx solid #333;
+  border: 1rpx solid var(--color-border-strong);
 }
 
 /* ─── Filter section ─────────────────────────────────── */
@@ -94,7 +94,7 @@ page {
 
 .filter-label {
   font-size: 24rpx;
-  color: #888;
+  color: var(--color-text-secondary);
   min-width: 56rpx;
   flex-shrink: 0;
 }
@@ -107,16 +107,16 @@ page {
 
 .filter-tag {
   font-size: 22rpx;
-  color: #888;
-  background: #2a2a2a;
+  color: var(--color-text-secondary);
+  background: var(--color-border-default);
   padding: 6rpx 20rpx;
   border-radius: 99rpx;
   white-space: nowrap;
 }
 
 .filter-tag.active {
-  background: #a8e6cf;
-  color: #0f0f0f;
+  background: var(--color-brand);
+  color: var(--color-bg-base);
   font-weight: 500;
 }
 
@@ -125,7 +125,7 @@ page {
 .results-count {
   padding: 12rpx 32rpx;
   font-size: 22rpx;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 /* ─── Card favorite button ────────────────────────────── */
@@ -140,11 +140,11 @@ page {
 
 .card-fav-icon {
   font-size: 32rpx;
-  color: #555;
+  color: var(--color-text-tertiary);
 }
 
 .card-fav-icon.fav-filled {
-  color: #e8a87c;
+  color: var(--color-warning);
 }
 
 /* ─── Loading ─────────────────────────────────────────── */
@@ -168,7 +168,7 @@ page {
   width: 12rpx;
   height: 12rpx;
   border-radius: 50%;
-  background: #a8e6cf;
+  background: var(--color-brand);
   opacity: 0.3;
   animation: dotPulse 1.5s ease-in-out infinite;
 }
@@ -197,7 +197,7 @@ page {
 
 .empty-text {
   font-size: 28rpx;
-  color: #555;
+  color: var(--color-text-tertiary);
 }
 
 /* ─── Card list ───────────────────────────────────────── */
@@ -209,7 +209,7 @@ page {
 .material-card {
   position: relative;
   margin: 12rpx 32rpx;
-  background: #1a1a1a;
+  background: var(--color-bg-elevated);
   border-radius: 24rpx;
   overflow: hidden;
 }
@@ -229,7 +229,7 @@ page {
 .card-cover-placeholder {
   width: 100%;
   height: 320rpx;
-  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  background: linear-gradient(135deg, var(--color-border-default) 0%, var(--color-bg-elevated) 100%);
 }
 
 /* ─── Card body ───────────────────────────────────────── */
@@ -242,7 +242,7 @@ page {
   display: block;
   font-size: 32rpx;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--color-text-primary);
   line-height: 1.4;
 }
 
@@ -258,16 +258,16 @@ page {
 
 .tag-source {
   font-size: 22rpx;
-  color: #888;
-  background: #2a2a2a;
+  color: var(--color-text-secondary);
+  background: var(--color-border-default);
   padding: 4rpx 16rpx;
   border-radius: 99rpx;
 }
 
 .tag-accent {
   font-size: 22rpx;
-  color: #999;
-  background: #2a2a2a;
+  color: var(--color-text-secondary);
+  background: var(--color-border-default);
   padding: 4rpx 16rpx;
   border-radius: 99rpx;
 }
@@ -280,37 +280,37 @@ page {
 }
 
 .tag-beginner {
-  background: rgba(168, 230, 207, 0.15);
-  color: #a8e6cf;
+  background: rgba(125, 206, 160, 0.15);
+  color: var(--color-brand);
 }
 
 .tag-intermediate {
-  background: rgba(255, 217, 125, 0.15);
-  color: #ffd97d;
+  background: rgba(201, 168, 76, 0.15);
+  color: var(--color-score-mid);
 }
 
 .tag-advanced {
-  background: rgba(255, 153, 153, 0.15);
-  color: #ff9999;
+  background: rgba(192, 97, 107, 0.15);
+  color: var(--color-score-low);
 }
 
 .tag-duration {
   margin-left: auto;
   font-size: 22rpx;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 /* ─── Progress bar ────────────────────────────────────── */
 
 .progress-text {
   font-size: 22rpx;
-  color: #a8e6cf;
+  color: var(--color-brand);
   font-weight: 500;
 }
 
 .progress-bar-wrap {
   height: 4rpx;
-  background: #2a2a2a;
+  background: var(--color-border-default);
   border-radius: 2rpx;
   margin-top: 16rpx;
   overflow: hidden;
@@ -318,7 +318,7 @@ page {
 
 .progress-bar-fill {
   height: 100%;
-  background: #a8e6cf;
+  background: var(--color-brand);
   border-radius: 2rpx;
   transition: width 0.3s ease;
 }

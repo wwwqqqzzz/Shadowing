@@ -1,12 +1,12 @@
 /* ─── Base ────────────────────────────────────────────── */
 
 page {
-  background: #0f0f0f;
+  background: var(--color-bg-base);
 }
 
 .container {
   min-height: 100vh;
-  background: #0f0f0f;
+  background: var(--color-bg-base);
 }
 
 /* ─── Loading ─────────────────────────────────────────── */
@@ -28,7 +28,7 @@ page {
   width: 12rpx;
   height: 12rpx;
   border-radius: 50%;
-  background: #a8e6cf;
+  background: var(--color-brand);
   opacity: 0.3;
   animation: dotPulse 1.5s ease-in-out infinite;
 }
@@ -56,7 +56,7 @@ page {
 
 .stats-card {
   flex: 1;
-  background: #1a1a1a;
+  background: var(--color-bg-elevated);
   border-radius: 24rpx;
   padding: 40rpx;
   display: flex;
@@ -68,12 +68,12 @@ page {
 .stats-number {
   font-size: 64rpx;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--color-text-primary);
 }
 
 .stats-label {
   font-size: 24rpx;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .streak-card {
@@ -82,7 +82,7 @@ page {
 
 .streak-hint {
   font-size: 18rpx;
-  color: #e8a87c;
+  color: var(--color-warning);
   margin-top: 2rpx;
 }
 
@@ -97,7 +97,7 @@ page {
 
 .extra-item {
   flex: 1;
-  background: #1a1a1a;
+  background: var(--color-bg-elevated);
   border-radius: 16rpx;
   padding: 20rpx 24rpx;
   display: flex;
@@ -107,12 +107,12 @@ page {
 
 .extra-label {
   font-size: 22rpx;
-  color: #555;
+  color: var(--color-text-tertiary);
 }
 
 .extra-value {
   font-size: 26rpx;
-  color: #ccc;
+  color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -122,7 +122,7 @@ page {
 
 .weekly-chart {
   margin: 24rpx 32rpx 0;
-  background: #1a1a1a;
+  background: var(--color-bg-elevated);
   border-radius: 20rpx;
   padding: 28rpx 20rpx 16rpx;
 }
@@ -155,23 +155,23 @@ page {
   width: 70%;
   min-height: 6rpx;
   border-radius: 6rpx 6rpx 0 0;
-  background: #222;
+  background: var(--color-bg-overlay);
   transition: height 0.3s ease;
 }
 
 .weekly-bar-fill.active {
-  background: #a8e6cf;
+  background: var(--color-brand);
 }
 
 .weekly-bar-label {
   font-size: 20rpx;
-  color: #444;
+  color: var(--color-text-tertiary);
   margin-top: 10rpx;
 }
 
 .weekly-bar-count {
   font-size: 18rpx;
-  color: #a8e6cf;
+  color: var(--color-brand);
   position: absolute;
   top: 0;
   text-align: center;
@@ -180,7 +180,7 @@ page {
 
 .streak-detail {
   font-size: 12px;
-  color: #555;
+  color: var(--color-text-tertiary);
   text-align: center;
   margin-top: 6px;
   margin-bottom: 16px;
@@ -190,7 +190,7 @@ page {
 /* ─── Calendar ───────────────────────────────────────── */
 
 .calendar-wrap {
-  background: #141414;
+  background: var(--color-bg-elevated);
   border-radius: 16rpx;
   padding: 24rpx 20rpx 20rpx;
   margin: 0 32rpx 20rpx;
@@ -219,18 +219,18 @@ page {
 }
 .cal-back-icon {
   font-size: 32rpx;
-  color: #a8e6cf;
+  color: var(--color-brand);
 }
 .cal-back-text {
   font-size: 24rpx;
-  color: #a8e6cf;
+  color: var(--color-brand);
 }
 .cal-backPlaceholder {
   width: 80rpx;
 }
 .cal-title {
   font-size: 28rpx;
-  color: #ccc;
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 .cal-headerSpacer {
@@ -244,7 +244,7 @@ page {
   gap: 12rpx;
 }
 .year-month-cell {
-  background: #1e1e1e;
+  background: var(--color-border-subtle);
   border-radius: 12rpx;
   padding: 20rpx 12rpx;
   display: flex;
@@ -253,18 +253,18 @@ page {
   gap: 6rpx;
 }
 .year-month-cell.current {
-  border: 2rpx solid #a8e6cf;
+  border: 2rpx solid var(--color-brand);
 }
 .year-month-cell.has-data {
-  background: #222;
+  background: var(--color-bg-overlay);
 }
 .ym-label {
   font-size: 24rpx;
-  color: #aaa;
+  color: var(--color-text-secondary);
 }
 .ym-count {
   font-size: 20rpx;
-  color: #4ade80;
+  color: var(--color-success-bright);
 }
 
 /* Level 2: Month view */
@@ -282,15 +282,15 @@ page {
   align-items: center;
   justify-content: center;
   font-size: 32rpx;
-  color: #888;
+  color: var(--color-text-secondary);
   border-radius: 50%;
 }
 .month-nav-btn:active {
-  background: #222;
+  background: var(--color-bg-overlay);
 }
 .month-nav-label {
   font-size: 28rpx;
-  color: #ccc;
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 .month-weekdays {
@@ -301,7 +301,7 @@ page {
   width: calc(100% / 7);
   text-align: center;
   font-size: 20rpx;
-  color: #3a3a3a;
+  color: var(--color-text-tertiary);
   padding: 8rpx 0;
 }
 .month-grid {
@@ -315,11 +315,11 @@ page {
   justify-content: center;
   height: 60rpx;
   font-size: 22rpx;
-  color: #4a4a4a;
+  color: var(--color-text-tertiary);
   position: relative;
 }
 .day-cell.done {
-  color: #ccc;
+  color: var(--color-text-primary);
 }
 .day-cell.done::after {
   content: '';
@@ -330,21 +330,21 @@ page {
   width: 6rpx;
   height: 6rpx;
   border-radius: 50%;
-  background: #4ade80;
+  background: var(--color-success-bright);
 }
 .day-cell.today {
-  color: #a8e6cf;
+  color: var(--color-brand);
   font-weight: 700;
 }
 .day-cell.today::before {
   content: '';
   position: absolute;
   inset: 6rpx;
-  border: 2rpx solid #a8e6cf;
+  border: 2rpx solid var(--color-brand);
   border-radius: 50%;
 }
 .day-cell.future {
-  color: #222;
+  color: var(--color-bg-overlay);
 }
 .day-cell.empty {
   visibility: hidden;
@@ -360,12 +360,12 @@ page {
 }
 .day-date {
   font-size: 28rpx;
-  color: #ddd;
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 .day-count {
   font-size: 22rpx;
-  color: #4ade80;
+  color: var(--color-success-bright);
 }
 .day-empty {
   padding: 60rpx 0;
@@ -373,7 +373,7 @@ page {
 }
 .day-empty-text {
   font-size: 24rpx;
-  color: #444;
+  color: var(--color-text-tertiary);
 }
 .day-records {
   max-height: 400rpx;
@@ -381,11 +381,11 @@ page {
 }
 .day-record {
   padding: 16rpx 12rpx;
-  border-bottom: 2rpx solid #1e1e1e;
+  border-bottom: 2rpx solid var(--color-border-subtle);
 }
 .day-record-text {
   font-size: 24rpx;
-  color: #bbb;
+  color: var(--color-text-tertiary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -397,11 +397,11 @@ page {
 }
 .day-record-dur {
   font-size: 20rpx;
-  color: #555;
+  color: var(--color-text-tertiary);
 }
 .day-record-score {
   font-size: 20rpx;
-  color: #4ade80;
+  color: var(--color-success-bright);
 }
 
 /* ─── Settings entry ────────────────────────────────────── */
@@ -411,17 +411,17 @@ page {
   justify-content: space-between;
   align-items: center;
   padding: 28rpx 32rpx;
-  border-bottom: 2rpx solid #1e1e1e;
+  border-bottom: 2rpx solid var(--color-border-subtle);
 }
 
 .settings-label {
   font-size: 28rpx;
-  color: #888;
+  color: var(--color-text-secondary);
 }
 
 .settings-arrow {
   font-size: 32rpx;
-  color: #555;
+  color: var(--color-text-tertiary);
 }
 
 /* ─── Wrong book entry ────────────────────────────────────── */
@@ -429,10 +429,10 @@ page {
 .wrong-book-row { flex-wrap: nowrap; }
 .wrong-book-left { display: flex; align-items: center; gap: 12rpx; }
 .wrong-book-right { display: flex; align-items: center; gap: 16rpx; }
-.wrong-hint { font-size: 22rpx; color: #e8a87c; }
+.wrong-hint { font-size: 22rpx; color: var(--color-warning); }
 .wrong-badge {
-  background: #a8e6cf;
-  color: #0f0f0f;
+  background: var(--color-brand);
+  color: var(--color-bg-base);
   font-size: 22rpx;
   font-weight: 600;
   padding: 4rpx 16rpx;
@@ -445,7 +445,7 @@ page {
 
 .section-title {
   font-size: 26rpx;
-  color: #666;
+  color: var(--color-text-secondary);
   padding: 48rpx 32rpx 20rpx;
 }
 
@@ -456,7 +456,7 @@ page {
   justify-content: space-between;
   align-items: center;
   padding: 28rpx 32rpx;
-  border-bottom: 2rpx solid #1e1e1e;
+  border-bottom: 2rpx solid var(--color-border-subtle);
 }
 
 .item-tap {
@@ -472,7 +472,7 @@ page {
 .record-material-title {
   display: block;
   font-size: 28rpx;
-  color: #ffffff;
+  color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -481,7 +481,7 @@ page {
 .record-text {
   display: block;
   font-size: 24rpx;
-  color: #555;
+  color: var(--color-text-tertiary);
   margin-top: 6rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -497,12 +497,12 @@ page {
 
 .record-duration {
   font-size: 26rpx;
-  color: #a8e6cf;
+  color: var(--color-brand);
 }
 
 .record-time {
   font-size: 22rpx;
-  color: #444;
+  color: var(--color-text-tertiary);
   margin-top: 4rpx;
 }
 
@@ -518,7 +518,7 @@ page {
 
 .empty-text {
   font-size: 28rpx;
-  color: #555;
+  color: var(--color-text-tertiary);
   text-align: center;
   padding: 0 60rpx;
   line-height: 1.6;
@@ -527,9 +527,9 @@ page {
 .empty-btn {
   padding: 20rpx 48rpx;
   border-radius: 99rpx;
-  background: #a8e6cf;
+  background: var(--color-brand);
   font-size: 28rpx;
-  color: #0f0f0f;
+  color: var(--color-bg-base);
   font-weight: 500;
 }
 

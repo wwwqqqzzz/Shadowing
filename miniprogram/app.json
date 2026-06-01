@@ -9,15 +9,15 @@
     "pages/settings/settings"
   ],
   "window": {
-    "navigationBarTitleText": "Shadowing",
-    "navigationBarBackgroundColor": "#0f0f0f",
+    "navigationBarTitleText": "影读",
+    "navigationBarBackgroundColor": "#080808",
     "navigationBarTextStyle": "white",
-    "backgroundColor": "#0f0f0f"
+    "backgroundColor": "#080808"
   },
   "tabBar": {
-    "color": "#888888",
-    "selectedColor": "#a8e6cf",
-    "backgroundColor": "#0f0f0f",
+    "color": "#444444",
+    "selectedColor": "#7dcea0",
+    "backgroundColor": "#080808",
     "borderStyle": "black",
     "list": [
       {

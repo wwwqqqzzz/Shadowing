@@ -1,6 +1,6 @@
 .container {
   padding: 0 32rpx;
-  background: #0f0f0f;
+  background: var(--color-bg-base);
   min-height: 100vh;
 }
 
@@ -20,7 +20,7 @@
   width: 12rpx;
   height: 12rpx;
   border-radius: 50%;
-  background: #a8e6cf;
+  background: var(--color-brand);
   animation: dotPulse 1.2s ease-in-out infinite;
 }
 
@@ -47,13 +47,13 @@
 
 .streak-flame {
   font-size: 30rpx;
-  color: #fff;
+  color: var(--color-text-primary);
   font-weight: 500;
 }
 
 .streak-start {
   font-size: 30rpx;
-  color: #888;
+  color: var(--color-text-secondary);
   font-weight: 400;
 }
 
@@ -62,20 +62,20 @@
 }
 
 .streak-today.done {
-  color: #a8e6cf;
+  color: var(--color-brand);
 }
 
 .streak-today.undone {
-  color: #e8a87c;
+  color: var(--color-warning);
 }
 
 /* Hero card */
 .hero-card {
-  background: linear-gradient(145deg, #1a2a1a 0%, #0f0f0f 100%);
+  background: linear-gradient(145deg, var(--color-brand-dim) 0%, var(--color-bg-base) 100%);
   border-radius: 24rpx;
   padding: 48rpx 40rpx;
   margin-bottom: 24rpx;
-  border: 1rpx solid #2a2a2a;
+  border: 1rpx solid var(--color-border-default);
 }
 
 .hero-card-tap {
@@ -85,7 +85,7 @@
 .hero-title {
   display: block;
   font-size: 36rpx;
-  color: #fff;
+  color: var(--color-text-primary);
   font-weight: 600;
   margin-bottom: 12rpx;
 }
@@ -93,14 +93,14 @@
 .hero-material {
   display: block;
   font-size: 28rpx;
-  color: #aaa;
+  color: var(--color-text-secondary);
   margin-bottom: 24rpx;
 }
 
 .hero-sub {
   display: block;
   font-size: 26rpx;
-  color: #777;
+  color: var(--color-text-secondary);
   margin-bottom: 20rpx;
 }
 
@@ -112,8 +112,8 @@
 
 .hero-tag {
   display: inline-block;
-  background: #2a2a2a;
-  color: #aaa;
+  background: var(--color-border-default);
+  color: var(--color-text-secondary);
   font-size: 22rpx;
   padding: 6rpx 16rpx;
   border-radius: 99rpx;
@@ -128,21 +128,21 @@
 
 .hero-progress-text {
   font-size: 24rpx;
-  color: #888;
+  color: var(--color-text-secondary);
 }
 
 .hero-progress-bar {
   flex: 1;
   margin-left: 20rpx;
   height: 8rpx;
-  background: #2a2a2a;
+  background: var(--color-border-default);
   border-radius: 4rpx;
   overflow: hidden;
 }
 
 .hero-progress-fill {
   height: 100%;
-  background: #a8e6cf;
+  background: var(--color-brand);
   border-radius: 4rpx;
   transition: width 0.3s ease;
 }
@@ -154,7 +154,7 @@
 
 .hero-cta-text {
   font-size: 30rpx;
-  color: #a8e6cf;
+  color: var(--color-brand);
   font-weight: 600;
 }
 
@@ -163,7 +163,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #1a1a1a;
+  background: var(--color-bg-elevated);
   border-radius: 20rpx;
   padding: 28rpx 32rpx;
   margin-bottom: 24rpx;
@@ -185,18 +185,18 @@
 
 .wrong-label {
   font-size: 28rpx;
-  color: #fff;
+  color: var(--color-text-primary);
   font-weight: 500;
 }
 
 .wrong-count {
   font-size: 24rpx;
-  color: #888;
+  color: var(--color-text-secondary);
 }
 
 .wrong-arrow {
   font-size: 36rpx;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 /* Quick filters */
@@ -207,7 +207,7 @@
 .quick-title {
   display: block;
   font-size: 26rpx;
-  color: #888;
+  color: var(--color-text-secondary);
   margin-bottom: 16rpx;
 }
 
@@ -217,8 +217,8 @@
 }
 
 .quick-tag {
-  background: #2a2a2a;
-  color: #ccc;
+  background: var(--color-border-default);
+  color: var(--color-text-primary);
   font-size: 26rpx;
   padding: 14rpx 32rpx;
   border-radius: 99rpx;
@@ -226,13 +226,13 @@
 }
 
 .quick-tag-mid {
-  background: rgba(168, 230, 207, 0.12);
-  color: #a8e6cf;
+  background: rgba(125, 206, 160, 0.12);
+  color: var(--color-brand);
 }
 
 .quick-tag-adv {
-  background: rgba(255, 153, 153, 0.12);
-  color: #ff9999;
+  background: rgba(192, 97, 107, 0.12);
+  color: var(--color-score-low);
 }
 
 .quick-all {
@@ -240,6 +240,6 @@
   text-align: center;
   margin-top: 24rpx;
   font-size: 26rpx;
-  color: #a8e6cf;
+  color: var(--color-brand);
   padding: 16rpx 0;
 }

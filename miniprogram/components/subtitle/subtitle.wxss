@@ -25,30 +25,30 @@
 
 .subtitle-text {
   font-size: 34rpx;
-  color: #e8e8e8;
+  color: var(--color-text-primary);
   line-height: 1.7;
 }
 
 .subtitle-block.active .subtitle-text {
   font-size: 38rpx;
-  color: #ffd700;
+  color: var(--color-gold);
   font-weight: 500;
 }
 
 .subtitle-index {
   font-size: 20rpx;
-  color: #555;
+  color: var(--color-text-tertiary);
   flex-shrink: 0;
 }
 
 .subtitle-block.active .subtitle-index {
-  color: #ffd700;
+  color: var(--color-gold);
 }
 
 .subtitle-translation {
   margin-top: 10rpx;
   font-size: 26rpx;
-  color: #666;
+  color: var(--color-text-secondary);
   line-height: 1.5;
   max-height: 0;
   overflow: hidden;
@@ -64,14 +64,14 @@
 .subtitle-progress {
   margin-top: 16rpx;
   height: 3rpx;
-  background: rgba(255, 215, 0, 0.15);
+  background: rgba(201, 168, 76, 0.15);
   border-radius: 2rpx;
   overflow: hidden;
 }
 
 .subtitle-progress-fill {
   height: 100%;
-  background: #ffd700;
+  background: var(--color-gold);
   border-radius: 2rpx;
   transition: width 0.1s linear;
 }

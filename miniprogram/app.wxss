@@ -1,7 +1,84 @@
 page {
+  /* ─── Background layers ─── */
+  --color-bg-base: #080808;
+  --color-bg-surface: #111111;
+  --color-bg-elevated: #1a1a1a;
+  --color-bg-overlay: #222222;
+
+  /* ─── Borders ─── */
+  --color-border-subtle: #1e1e1e;
+  --color-border-default: #2a2a2a;
+  --color-border-strong: #3a3a3a;
+
+  /* ─── Text layers ─── */
+  --color-text-primary: #f0f0f0;
+  --color-text-secondary: #888888;
+  --color-text-tertiary: #444444;
+  --color-text-inverse: #080808;
+
+  /* ─── Brand ─── */
+  --color-brand: #7dcea0;
+  --color-brand-dim: #1a2e22;
+  --color-brand-subtle: #0f1f17;
+
+  /* ─── Functional ─── */
+  --color-success: #7dcea0;
+  --color-warning: #c9a84c;
+  --color-error: #c0616b;
+  --color-info: #5b8fc9;
+
+  /* ─── Score ─── */
+  --color-score-high: #7dcea0;
+  --color-score-mid: #c9a84c;
+  --color-score-low: #c0616b;
+
+  /* ─── Accent-derived (for legacy #ffd700 player/subtitle) ─── */
+  --color-gold: #c9a84c;
+  --color-recording: #c0616b;
+  --color-success-bright: #7dcea0;
+
+  /* ─── Font sizes ─── */
+  --font-size-xs: 20rpx;
+  --font-size-sm: 24rpx;
+  --font-size-base: 28rpx;
+  --font-size-md: 32rpx;
+  --font-size-lg: 36rpx;
+  --font-size-xl: 44rpx;
+  --font-size-2xl: 56rpx;
+  --font-size-3xl: 72rpx;
+
+  /* ─── Line heights ─── */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-loose: 1.8;
+
+  /* ─── Font weights ─── */
+  --font-weight-normal: 400;
+  --font-weight-semibold: 600;
+
+  /* ─── Spacing ─── */
+  --space-1: 8rpx;
+  --space-2: 16rpx;
+  --space-3: 24rpx;
+  --space-4: 32rpx;
+  --space-5: 40rpx;
+  --space-6: 48rpx;
+  --space-8: 64rpx;
+  --page-padding: 32rpx;
+
+  /* ─── Border radius ─── */
+  --radius-sm: 8rpx;
+  --radius-md: 16rpx;
+  --radius-lg: 24rpx;
+  --radius-xl: 32rpx;
+  --radius-full: 999rpx;
+
+  /* ─── Global defaults ─── */
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-  font-size: 28rpx;
-  color: #333;
-  background-color: #f5f5f5;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-base);
   box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
 }
