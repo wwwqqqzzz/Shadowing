@@ -1,53 +1,109 @@
 # Shadowing 影子跟读 — Project Knowledge Base
 
-**Generated:** 2026-05-29
-**Branch:** (no git branch detected)
+**Updated:** 2026-06-01
+**Branch:** main
 
 ## OVERVIEW
 
 Shadowing 跟读训练系统：微信小程序 + NestJS 后端 + React 管理后台。
-围绕「播放一句 → 自动暂停 → 用户跟读 → 下一句」闭环设计。当前 Phase 0（原型验证）。
+核心闭环：「播放一句 → 自动暂停 → 用户跟读 → 下一句」。支持三种模式（自由/自动录音/手动）。
 
 ## STRUCTURE
 
 ```
 Shadowing/
 ├── miniprogram/      # 原生微信小程序 (WXML+WXSS+JS)
-│   ├── pages/       # 4 页面: home/materials/practice/profile
-│   ├── components/  # 3 自定义组件: player/recorder/subtitle
-│   ├── utils/       # API封装/登录/请求/格式化
-│   └── mock/        # Phase 0 本地 mock 数据
-├── backend/         # NestJS API (TypeScript)
-│   └── src/         # 6 模块: auth/materials/sentences/...
-├── admin/           # React + Ant Design 后台管理
-│   └── src/         # 2 页面: MaterialList/ImportMaterial
+│   ├── pages/       # 7 页面: home/materials/practice/profile/wrong-book/wrong-review/settings
+│   ├── components/  # 3 组件: player/recorder/subtitle (未注册)
+│   ├── utils/       # api/auth/format/request/util
+│   └── mock/        # Phase 0 mock 数据
+├── backend/         # NestJS API (TypeScript + TypeORM + PostgreSQL)
+│   └── src/         # 9 模块: auth/materials/sentences/practice-records/users/asr/config/app-config/favorites
+├── admin/           # React 19 + Ant Design 6 + Vite 8 后台管理
+│   └── src/         # 2 页面: MaterialList(含编辑Modal)/ImportMaterial
 ├── docs/            # 产品规范
+├── scripts/         # import-material, align_sentences, fix_algorithms, translate_sentences
 └── tmp/             # 临时媒体处理目录
+```
+
+## NAVIGATION
+
+```
+tabBar 3-tab: 训练(home) | 素材库(materials) | 我的(profile)
+
+home ──hero CTA──→ practice (startOrder续练)
+home ──quick filter──→ materials (level筛选 passed via globalData.pendingFilter)
+home ──错题本──→ wrong-book → wrong-review
+materials ──tap card──→ practice (materialId)
+materials ──♥──→ favorites API (POST/DELETE)
+profile ──streak calendar──→ (3级: year/month/day)
+profile ──settings──→ settings (练习模式选择)
 ```
 
 ## WHERE TO LOOK
 
 | Task | Location | Notes |
 |------|----------|-------|
-| 跟读训练核心逻辑 | `miniprogram/pages/practice/practice.js` | 332 行单体，含自动暂停/录音/回放 |
-| 后端路由定义 | `backend/src/*/*.controller.ts` | 5 controllers，全局 /api 前缀 |
-| 数据库实体 | `backend/src/*/entities/*.entity.ts` | 4 entities: Material/Sentence/PracticeRecord/User |
-| 后端服务层 | `backend/src/*/*.service.ts` | 6 services |
-| 后台管理页面 | `admin/src/pages/` | MaterialList + ImportMaterial |
-| 小程序 API 封装 | `miniprogram/utils/api.js` | 后端 API 调用封装 |
+| 跟读训练核心逻辑 | `miniprogram/pages/practice/practice.js` | ~500行，含自动暂停/录音/回放/3种模式/startOrder续练 |
+| 首页 Hero CTA | `miniprogram/pages/home/home.js` | 3状态(继续/推荐/开始)，streak条，错题提醒，快速筛选 |
+| 素材库筛选+收藏 | `miniprogram/pages/materials/materials.js` | accent/level/duration/favOnly筛选，搜索，♥收藏切换 |
+| 后端路由 | `backend/src/*/*.controller.ts` | 8 controllers，全局 /api 前缀 |
+| 数据库实体 | `backend/src/*/entities/*.entity.ts` | 7 entities: Material/Sentence/PracticeRecord/User/AppConfig/Favorite |
+| 后端服务层 | `backend/src/*/*.service.ts` | 8 services |
+| 收藏模块 | `backend/src/favorites/` | Entity(唯一索引[user,material]) + Service + Controller(POST/DELETE/GET) |
+| 续练接口 | `backend/src/practice-records/practice-records.controller.ts` | GET my/last-progress |
+| 后台管理 | `admin/src/pages/MaterialList.tsx` | 素材列表+编辑Modal(accent/level/status) |
+| 小程序 API | `miniprogram/utils/api.js` | 11个API函数，含getLastProgress/addFavorite/removeFavorite/getMyFavorites |
 | 鉴权流程 | `miniprogram/utils/auth.js` + `backend/src/auth/` | JWT + wx.login |
-| Mock 数据 | `miniprogram/mock/data.js` | Phase 0 素材+句子数据 |
+| 错题本 | `miniprogram/pages/wrong-book/` + `wrong-review/` | 优先级排序，连续2次≥80移出，oneMorePass提示 |
+| 打卡日历 | `miniprogram/pages/profile/profile.js` | 3级(year/month/day)日历，动态transform-origin缩放 |
+
+## FEATURES IMPLEMENTED
+
+### 跟读训练核心
+- 3种模式：自由(不录音)、自动录音(ASR评分)、手动(用户控制)
+- 模式选择：首次进入弹窗选择，后可通过设置页修改
+- 播放：wx.createInnerAudioContext() + setInterval(100ms)轮询（不用onTimeUpdate）
+- 录音：wx.getRecorderManager() 全局单例
+- 续练：practice.js 接受 startOrder 参数，从指定句子开始
+
+### 翻译
+- 1301/1301 句子 100% 翻译完成（en→zh-CN）
+- MyMemory API（429后弃用）+ 手动翻译 + sub-agent翻译
+
+### 错题+复习系统
+- 错题判定：连续2次 score ≥ mastery_threshold(80) 才移出错题本
+- oneMorePass：最近1次≥80但前1次<80
+- 优先级公式：(100-score)*0.6 + days*0.2 + errorCount*0.2
+- 后端 AppConfig entity 存储 mastery_threshold
+
+### 打卡+连续天数+日历
+- getStreakStats: currentStreak/longestStreak/totalDays/todayDone/calendarDates(90天)
+- 3级日历：年视图(3×4月份网格) → 月视图(7列日期+导航箭头) → 日视图(练习记录)
+- 缩放动画：cubic-bezier(0.4,0,0.2,1) + 动态transform-origin
+- Streak固定🔥 + 未打卡显示"今天还没练"
+
+### 导航重构+首页+素材库升级
+- tabBar: 3-tab (训练/素材库/我的)，深色主题
+- 首页: hero CTA 3状态(继续上次/今日推荐/去选择)，streak条，错题提醒，难度快速筛选
+- 素材库: accent/level/duration/favOnly筛选，搜索，♥收藏切换
+- 练习页: startOrder参数支持续练
+- 收藏: 后端favorites模块(CRUD)，小程序端Promise.all合并isFavorited
+- 后端: accent列，duration过滤器，last-progress接口，admin PATCH :id
+- 管理后台: MaterialList编辑Modal(accent/level/status)
 
 ## CONVENTIONS
 
-### 非标准约定（与行业默认不同）
+### 非标准约定
 
-- **后端 `noImplicitAny: false`** — 允许隐式 any 类型，ESLint 也关闭了 `no-explicit-any`
-- **小程序 tabBar 仅 2 tab** — 文档说 3 tab（首页/素材/我的），实际只有素材和我的
-- **自定义组件存在但未注册** — player/recorder/subtitle 组件已创建，但没有任何页面通过 `usingComponents` 引用
-- **E2E 测试** — 仅有 `test/app.e2e-spec.ts` 一个文件，无单元测试（无 `.spec.ts`）
-- **TypeORM `synchronize: true` 始终开启** — 生产环境需改成条件配置
-- **JWT secret 直接从 `process.env` 读取** — 与数据库配置使用 ConfigService 的方式不一致
+- **后端 `noImplicitAny: false`** — 允许隐式 any 类型
+- **tabBar 3 tab** — 训练(首页)/素材库/我的
+- **自定义组件存在但未注册** — player/recorder/subtitle 未被任何页面引用
+- **E2E 测试** — 仅有 app.e2e-spec.ts，无单元测试
+- **TypeORM `synchronize: true`** — 生产环境需条件配置
+- **JWT secret 直接从 `process.env` 读取** — 与数据库配置的 ConfigService 方式不一致
+- **ES6 shorthand { foo } 只在变量名一致时用** — 否则必须 { foo: bar }
+- **GET /materials 是公开接口不含 isFavorited** — 小程序端通过 getMyFavorites() 合并收藏状态
 
 ### 技术选型
 
@@ -56,68 +112,88 @@ Shadowing/
 - 后端 ORM: TypeORM + PostgreSQL
 - 鉴权: passport-jwt
 - 后台: React 19 + Ant Design 6 + Vite 8 + TypeScript 6.0
-- ASR 对齐: OpenAI Whisper `base` model (CPU)
-- 素材下载: yt-dlp (MP3 + 手写字幕)
-- 两条对齐管道: VTT→Whisper 对齐 (有手写字幕) / Whisper-only (无字幕/自动字幕)
+- ASR: OpenAI Whisper `base` model (CPU)
+- 素材下载: yt-dlp (MP3 + 字幕)
+- 深色主题: #0f0f0f背景, #1a1a1a卡片, #a8e6cf强调色
 
-## ANTI-PATTERNS（该项目内禁止）
+## ANTI-PATTERNS（项目内禁止）
 
 | 模式 | 说明 | 位置 |
 |------|------|------|
-| `as any` 类型断言 | TypeORM 关系类型绕过 | `practice-records.service.ts:15-16` |
-| 静默吞错误 | catch 只 console.warn 但不通知用户 | `api.js:14`, `profile.js:25`, `practice.js:51` |
-| 硬编码 API URL | localhost:3000 硬编码 | `request.js:1`, `admin/api/materials.ts:3` |
-| 跳转不存在页面 | request.js 导航到未注册的 /pages/login/login | `request.js:18` |
-| 孤立模块 | SentencesService 被导出但从未被使用 | `sentences/` 整个目录 |
-| 重复代码 | scripts/import-material.ts 内联了 vtt-parser 完整实现 | `scripts/import-material.ts` |
-| ⚠️ 微信 onTimeUpdate 不可靠 | 不能用 `ac.onTimeUpdate()` 做播放边界检测——iOS 远程音频可能不触发或 currentTime 返回错误值。必须用 `setInterval(100ms)` 轮询 | `practice.js` seek 模式 |
-| ⚠️ Timer padding 是绝对值陷阱 | 后备 timer 不要加超过 200ms 的固定 padding。1s 句子 + 3s padding = 300% 误差，用户能听到下句内容 | `practice.js _startSentenceTimer` |
-| ⚠️ YouTube 自动字幕不能用于对齐 | auto-generated subs (en-orig) 是逐词滚动字幕（卡拉OK式），不是按句分段。用 align_sentences.py 对齐会产生负时间戳和 100s+ 片段。必须走 Whisper-only 管道（无 VTT） | `scripts/align_sentences.py` |
-| ⚠️ 新素材默认 draft 状态 | INSERT INTO material 不设 status 则默认 draft，前端只显示 published。插入后必须 `UPDATE material SET status = 'published'` | DB material table |
-| ⚠️ Proxy 环境变量 | Mac 全局代理 127.0.0.1:7897，curl 需手动设 `http_proxy`/`https_proxy`，yt-dlp 自动走系统代理 | 所有网络请求 |
-| ⚠️ 句子边界必须 tighten | Whisper/VTT 分段边界包含句前句后静音，不做 tighten 会导致播放时开头空白或读到下一句 | `postprocess_alignment.py tighten_boundaries()` |
-
-## UNIQUE STYLES
-
-- **后端模块拆分** — 每个 domain 一个模块（NestJS 标准），但 sentences 模块无 controller（仅 provider）
-- **管理端/公共端控制器共存** — admin-materials.controller 放在 materials 模块内，而非独立 admin 模块
-- **脚本存放** — seed.ts 在 src/ 下（不通过 NestJS DI），import-material.ts 在 scripts/ 下
-- **小程度页面编号** — 页面注册顺序: materials → practice → home → profile（非字母序）
+| `as any` 类型断言 | TypeORM 关系类型绕过 | `practice-records.service.ts` `as any` |
+| 静默吞错误 | catch 只 console.warn 不通知用户 | 多处 |
+| 硬编码 API URL | localhost:3000 | `request.js:1`, `admin/api/materials.ts:3` |
+| ⚠️ 微信 onTimeUpdate 不可靠 | iOS远程音频可能不触发，必须setInterval轮询 | `practice.js` |
+| ⚠️ Timer padding 是绝对值陷阱 | 不超过200ms，否则300%误差 | `practice.js _startSentenceTimer` |
+| ⚠️ YouTube 自动字幕不能用于对齐 | 逐词滚动式，必须走Whisper-only管道 | `scripts/align_sentences.py` |
+| ⚠️ 新素材默认 draft | 前端只显示published，插入后必须SET published | DB material table |
+| ⚠️ Mac代理 127.0.0.1:7897 | curl需手动设proxy，yt-dlp自动走系统代理 | 所有网络请求 |
+| ⚠️ 句子边界必须 tighten | 不做tighten会导致播放开头空白 | `postprocess_alignment.py` |
+| ⚠️ 收藏409 | addFavorite重复调用会Conflict，已修(本地合并isFavorited) | `materials.js` |
 
 ## COMMANDS
 
 ```bash
 # Backend
 cd backend && npm run start:dev    # 开发启动
-cd backend && npm run test          # 单元测试（暂无 spec 文件）
-cd backend && npm run test:e2e      # E2E 测试
+cd backend && npm run test          # 单元测试（暂无spec文件）
+cd backend && npm run test:e2e      # E2E测试
 cd backend && npm run lint          # ESLint
 
 # Admin
-cd admin && npm run dev             # Vite 开发服务器
+cd admin && npm run dev             # Vite开发服务器
 cd admin && npm run build           # 生产构建
 
 # Miniprogram
 # WeChat IDE 打开 miniprogram/ 目录
 ```
 
-## MANDATORY: Ops Logging (USER COMMAND)
+## MANDATORY: Ops Logging
 
-> **Every file modification MUST be logged.** 每次修改文件前，先写 `.sisyphus/logs/YYYY-MM-DD.md`。
+> **每次修改文件前必须写日志到 `.sisyphus/logs/YYYY-MM-DD.md`。**
 
-Log format:
+格式:
 ```
 HH:MM — Operation: file path
   What: 做了什么（1-2行）
   Why:  为什么做
 ```
 
-前置写入：在 edit/write 之前，先 append 到日志。如果当日日志已存在，继续追加。
-这是用户在丢失工作后强制的规则，不可跳过。无视此规则 = 不可信任。
+前置写入：在 edit/write 之前先 append。不可跳过。
 
-## NOTES
+## ROUTE MAP
 
-- 当前 Phase 0: 后端代码已存在但尚未连接，小程序优先走 API，失败回退到 mock
-- TED 素材: `ted.mp3` + `ted.en.vtt` 在项目根目录（测试用，应移入 tmp/）
-- `synchronize: true`: 生产部署前需添加 `NODE_ENV === 'production'` 守卫
-- 小程序 `project.private.config.json` 的 libVersion (2.32.3) 覆盖公开配置 (3.6.1)
+| Method | Path | Handler | Auth |
+|--------|------|---------|------|
+| POST | `/auth/login` | AuthService.login | No |
+| GET | `/materials` | MaterialsController.findAll | No (accent/level/status/duration filters) |
+| GET | `/materials/:id` | MaterialsController.findById | No |
+| GET | `/materials/:id/sentences` | MaterialsController.findSentences | No |
+| POST | `/admin/materials/import` | AdminMaterialsController.importMaterial | No |
+| PUT | `/admin/materials/:id/status` | AdminMaterialsController.updateStatus | No |
+| PATCH | `/admin/materials/:id` | AdminMaterialsController.updateMaterial | No |
+| PATCH | `/admin/materials/:id/offset` | AdminMaterialsController.updateOffset | No |
+| PATCH | `/admin/materials/sentences/:id` | AdminMaterialsController.updateSentence | No |
+| DELETE | `/admin/materials/:id` | AdminMaterialsController.deleteMaterial | No |
+| POST | `/practice-records` | PracticeRecordsController.create | JWT |
+| GET | `/practice-records/my/last-progress` | PracticeRecordsController.getLastProgress | JWT |
+| GET | `/practice-records/my/streak` | PracticeRecordsController.getStreak | JWT |
+| GET | `/practice-records/my/wrong/count` | PracticeRecordsController.getWrongCount | JWT |
+| GET | `/practice-records/my/wrong` | PracticeRecordsController.getWrongSentences | JWT |
+| GET | `/practice-records/my/stats` | PracticeRecordsController.getMyStats | JWT |
+| GET | `/practice-records/my` | PracticeRecordsController.getMyRecords | JWT |
+| POST | `/favorites/:materialId` | FavoritesController.addFavorite | JWT |
+| DELETE | `/favorites/:materialId` | FavoritesController.removeFavorite | JWT |
+| GET | `/favorites/my` | FavoritesController.getMyFavorites | JWT |
+| GET | `/users/me` | UsersController.getProfile | JWT |
+
+## DB SCHEMA
+
+```
+Material: id(uuid), title, language, accent(american), level, coverUrl?, audioUrl, durationMs, status(draft), source?, audioOffsetMs, createdAt
+Sentence: id(uuid), order, startTime, endTime, text, translation?, audioUrl?, → Material, → PracticeRecord[]
+PracticeRecord: id(uuid), audioUrl?, score?, errorWords?, durationMs, createdAt → User, → Sentence
+User: id(uuid), openid(unique), nickname?, avatarUrl?, preferredLanguage, createdAt
+AppConfig: id(uuid), key(unique), value
+Favorite: id(uuid), createdAt → User, → Material  [UNIQUE(user, material)]
+```
