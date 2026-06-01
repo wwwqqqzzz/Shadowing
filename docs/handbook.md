@@ -65,7 +65,7 @@ Shadowing/
 │   │   ├── wrong-review/      # 错题复习
 │   │   └── settings/         # 模式选择
 │   ├── utils/
-│   │   ├── api.js             # 11 个 API 函数
+│   │   ├── api.js             # 14 个 API 函数
 │   │   ├── auth.js            # wx.login + JWT
 │   │   ├── format.js          # duration/relativeTime/modeName
 │   │   ├── request.js          # HTTP 封装 (localhost:3000/api)
@@ -74,14 +74,18 @@ Shadowing/
 │   └── app.js/json/wxss       # tabBar 3-tab, globalData.pendingFilter
 │
 ├── backend/src/               # NestJS 后端
-│   ├── auth/                  # wx.login mock → JWT
+│   ├── auth/                  # wx.login mock → JWT + OptionalJwtAuthGuard
 │   ├── materials/             # 素材 CRUD + accent/duration 过滤 + admin 管理
 │   │   ├── entities/material.entity.ts   # accent, level, durationMs, status
-│   │   ├── materials.controller.ts      # GET /materials (公开)
-│   │   ├── materials.service.ts          # findAll 带过滤器
+│   │   ├── materials.controller.ts      # GET /materials (OptionalJwtAuthGuard)
+│   │   ├── materials.service.ts          # findAll 带过滤器 + progress 合并
 │   │   └── admin-materials.controller.ts # POST import, PATCH, DELETE
 │   ├── sentences/             # 句子实体 (无 controller)
 │   ├── practice-records/      # 练习记录 + stats + streak + wrong + last-progress
+│   ├── progress/              # 练习进度保存 (upsert, batch, latest)
+│   │   ├── entities/progress.entity.ts  # user+material 唯一索引
+│   │   ├── progress.service.ts           # saveProgress, getBatchProgress, getLatestProgress
+│   │   └── progress.controller.ts       # POST, GET
 │   ├── favorites/             # 收藏 CRUD (POST/DELETE/GET, 唯一索引)
 │   ├── users/                 # 用户 profile
 │   ├── asr/                   # Whisper 转写 + 评分
@@ -115,11 +119,11 @@ Shadowing/
 ```
 tabBar
 ├── 训练 (home)             ← Hero CTA 3状态 + streak条 + 错题提醒 + 快速筛选
-├── 素材库 (materials)       ← 4维筛选 + 搜索 + ♥收藏
+├── 素材库 (materials)       ← 5维筛选 + 搜索 + ♥收藏 + ✓已完成筛选
 └── 我的 (profile)           ← 统计 + 3级日历 + 错题本入口 + 设置入口
 
 非 tabBar (wx.navigateTo)
-├── practice                 ← 核心跟读 (3模式 + startOrder续练)
+├── practice                 ← 核心跟读 (3模式 + startOrder续练 + 完成页)
 ├── wrong-book               ← 错题列表 (优先级排序)
 ├── wrong-review             ← 错题复习 (播放→录音→评分→结果)
 └── settings                 ← 模式选择 (自由/自动/手动)
@@ -130,11 +134,41 @@ tabBar
 ```
 onShow:
   getLastProgress() ──→ 有且进度<95% → "继续上次"
-                       有且进度≥95% → "今日推荐"
-                       无/空       → "去选择"
+                        有且进度≥95% → "重新练" (从头开始)
+                        无/空       → "去选择"
 
-续练跳转: practice?materialId=X&startOrder=Y
+继续跳转: practice?materialId=X&startOrder=Y&materialTitle=...
+重新练:   practice?materialId=X&startOrder=1&materialTitle=...
 快速筛选: globalData.pendingFilter = { level } → switchTab 素材库
+```
+
+### 练习完成页
+
+```
+练完最后一句 → 显示完成页覆盖层:
+  🎉 练习完成
+  Rachel's English
+  76 句 · 12:30
+  平均 85 分          ← 仅自动录音模式显示
+  [重新练]  [返回]
+
+重新练: currentIndex=0, sessionScores=[], practiceStartTime=now, saveProgress(1)
+返回: navigateBack()
+```
+
+### 进度保存策略
+
+```
+onHide / onUnload → saveProgress(materialId, currentSentenceOrder, totalSentences)
+练完最后一句     → saveProgress(materialId, 1, totalSentences)  ← 重置为第1句
+
+GET /practice-records/my/last-progress
+  优先查 progress 表（更准确，中途退出也保存了）
+  fallback 到 practice_record 表
+
+GET /materials (带 JWT) → 每条素材附带 progress 字段:
+  { sentenceOrder: 12, totalSentences: 76, percent: 16 }
+  无进度记录时 progress = null
 ```
 
 ### 收藏合并策略
@@ -203,6 +237,15 @@ PracticeRecord (练习记录)
   → user        ManyToOne
   → sentence    ManyToOne
 
+Progress (练习进度)                              ← UNIQUE(user, material)
+  id            uuid PK
+  → user        ManyToOne
+  → material    ManyToOne
+  sentenceOrder integer                        ← 上次练到第几句
+  totalSentences integer                       ← 素材总句数
+  updatedAt     timestamp                      ← 自动更新
+  createdAt     timestamp
+
 User (用户)
   id            uuid PK
   openid        string unique
@@ -230,12 +273,17 @@ Favorite (收藏)                                  ← UNIQUE(user, material)
 
 基础路径：`http://localhost:3000/api`
 
+### 可选鉴权接口（有 JWT 则附带 progress）
+
+| Method | Path | 说明 |
+|--------|------|------|
+| GET | `/materials` | 素材列表，带 token 时每条附带 progress 字段 |
+
 ### 公开接口（无需 JWT）
 
 | Method | Path | 说明 |
 |--------|------|------|
 | POST | `/auth/login` | 微信登录，返回 JWT |
-| GET | `/materials` | 素材列表，支持 accent/level/status/duration 筛选 |
 | GET | `/materials/:id` | 单个素材 |
 | GET | `/materials/:id/sentences` | 素材下句子列表 |
 | POST | `/admin/materials/import` | 导入素材（multipart） |
@@ -250,12 +298,14 @@ Favorite (收藏)                                  ← UNIQUE(user, material)
 | Method | Path | 说明 |
 |--------|------|------|
 | POST | `/practice-records` | 创建练习记录 |
-| GET | `/practice-records/my/last-progress` | 最近练习位置（续练） |
+| GET | `/practice-records/my/last-progress` | 最近练习位置（优先查 progress 表） |
 | GET | `/practice-records/my/streak` | 打卡统计 |
 | GET | `/practice-records/my/stats` | 练习统计 |
 | GET | `/practice-records/my/wrong/count` | 错题数量 |
 | GET | `/practice-records/my/wrong` | 错题列表 |
 | GET | `/practice-records/my` | 练习记录分页 |
+| POST | `/progress` | 保存/更新练习进度（upsert） |
+| GET | `/progress/:materialId` | 获取某素材的练习进度 |
 | POST | `/favorites/:materialId` | 收藏（409 if duplicate） |
 | DELETE | `/favorites/:materialId` | 取消收藏 |
 | GET | `/favorites/my` | 我的收藏列表 |
@@ -266,6 +316,17 @@ Favorite (收藏)                                  ← UNIQUE(user, material)
 `GET /materials?accent=american&level=intermediate&duration=short&status=published`
 
 duration 值：`short`（<5min）、`medium`（5-15min）、`long`（>15min）
+
+### 进度接口
+
+```
+POST /progress
+  Body: { materialId, sentenceOrder, totalSentences }
+  Response: { id, sentenceOrder, totalSentences, updatedAt }
+
+GET /progress/:materialId
+  Response: { id, sentenceOrder, totalSentences, updatedAt, createdAt } | null
+```
 
 ---
 
@@ -278,11 +339,25 @@ duration 值：`short`（<5min）、`medium`（5-15min）、`long`（>15min）
 getApp().globalData.pendingFilter = { level: 'beginner' }
 wx.switchTab({ url: '/pages/materials/materials' })
 
-// materials → practice (素材ID)
-wx.navigateTo({ url: `/pages/practice/practice?materialId=${id}` })
+// materials → practice (素材ID + 标题)
+wx.navigateTo({
+  url: `/pages/practice/practice?materialId=${id}&materialTitle=${encodeURIComponent(title)}`
+})
 
 // home → practice (续练)
-wx.navigateTo({ url: `/pages/practice/practice?materialId=${id}&startOrder=${order}` })
+wx.navigateTo({
+  url: `/pages/practice/practice?materialId=${id}&startOrder=${order}&materialTitle=${encodeURIComponent(title)}`
+})
+```
+
+### 进度保存时序
+
+```
+进入 practice 页 → 记录 practiceStartTime = Date.now()
+自动录音完成 → sessionScores.push(score)
+onHide / onUnload → saveProgress(materialId, currentOrder, total)
+练完最后一句 → saveProgress(materialId, 1, total) + 显示完成页
+点击"重新练" → saveProgress(materialId, 1, total) + _playSentence(0)
 ```
 
 ### 认证流程
@@ -299,6 +374,7 @@ request.js: 401 → 清 token → 重新 login → 重试原请求
 文字主:  #ffffff   文字次:  #888888    文字弱:  #555555
 初级:    #a8e6cf   中级:    #ffd97d   高级:    #ff9999
 收藏:    #e8a87c   边框:    #2a2a2a   提示:    #e8a87c
+已完成:  #a8e6cf   完成条:  #a8e6cf
 ```
 
 ---
@@ -313,8 +389,8 @@ request.js: 401 → 清 token → 重新 login → 重试原请求
 | Timer padding > 200ms | 1s句子+3spadding=300%误差 |
 | YouTube 自动字幕做对齐 | 逐词滚动式，负时间戳+100s+片段 |
 | 新素材不 SET published | 前端只显示 published，会看不到 |
-| `as any` 类型断言 | 用类型安全的方式替代 |
 | `isFavorited` 从 GET /materials 取 | 公开接口不含此字段，必须客户端合并 |
+| TypeORM `find()` 不加 `relations` 取 relation 属性 | 返回 proxy 对象，需用 `createQueryBuilder` + `getRawMany()` |
 
 ---
 
@@ -330,8 +406,11 @@ psql -U wang -d shadowing_dev -c "UPDATE material SET status = 'published';"
 # 查看错题阈值
 psql -U wang -d shadowing_dev -c "SELECT * FROM app_config;"
 
-# 清除练习数据（测试用）
-psql -U wang -d shadowing_dev -c "DELETE FROM practice_record; DELETE FROM favorite;"
+# 查看用户进度
+psql -U wang -d shadowing_dev -c 'SELECT p."sentenceOrder", p."totalSentences", m.title FROM progress p JOIN material m ON p."materialId" = m.id;'
+
+# 清除测试数据
+psql -U wang -d shadowing_dev -c "DELETE FROM practice_record; DELETE FROM favorite; DELETE FROM progress;"
 
 # 后端类型检查
 cd backend && npx tsc --noEmit
@@ -346,6 +425,25 @@ node -c miniprogram/pages/home/home.js
 ---
 
 ## 11. 版本历史
+
+### v2.1.0 (2026-06-01) — 练习进度保存 + 完成页 + 已完成筛选
+
+**新增**：
+- 练习进度保存：onHide/onUnload 自动保存当前句子位置
+- Progress 表：user+material 唯一索引，upsert 保存
+- POST /progress + GET /progress/:materialId 接口
+- GET /materials 带 JWT 时附带 progress 字段（OptionalJwtAuthGuard）
+- 素材卡片显示进度条（<95% 绿色百分比，≥95% "已完成 ✓"）
+- 练习完成页：🎉 练习完成 + 总句数 + 用时 + 平均分（自动录音）
+- "重新练" 按钮：重置进度到第1句重新开始
+- "返回" 按钮：navigateBack()
+- 素材库"已完成"筛选 toggle（progress≥95%）
+- 首页 Hero 3 状态：继续上次 / 重新练 / 去选择
+- getLastProgress 优先查 progress 表，fallback 到 practice_record
+
+**修复**：
+- getBatchProgress 使用 createQueryBuilder + getRawMany 代替 find(relation)
+- onTogglePlay finished 状态不再自动重播
 
 ### v2.0.0 (2026-06-01) — 导航重构 + 首页 + 素材库升级
 

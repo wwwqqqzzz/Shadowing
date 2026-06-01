@@ -1,5 +1,35 @@
 # Shadowing — 变更日志
 
+## [2.1.0] — 2026-06-01
+
+### 新增
+
+#### 练习进度保存
+- 后端 Progress 模块：Entity(user+material 唯一索引) + Service + Controller
+- POST /progress — upsert 保存当前句子位置
+- GET /progress/:materialId — 获取某素材的练习进度
+- GET /practice-records/my/last-progress — 优先查 progress 表，fallback practice_record
+- GET /materials 带 JWT 时附带 progress 字段（OptionalJwtAuthGuard）
+- 小程序 practice.js onHide/onUnload 自动保存进度
+- 素材卡片进度条：<95% 显示绿色百分比，≥95% 显示 "已完成 ✓"
+
+#### 练习完成页
+- 练完最后一句 → 全屏完成页覆盖（🎉 练习完成）
+- 统计：总句数 + 用时 + 平均分（自动录音模式）
+- "重新练" 按钮：重置进度到第1句重新开始
+- "返回" 按钮：navigateBack()
+
+#### 已完成筛选 + Hero replay
+- 素材库新增 "已完成" toggle 筛选（progress≥95%）
+- 首页 Hero 3 状态：继续上次(<95%) / 重新练(≥95%, startOrder=1) / 去选择
+- 跳转 practice 时传递 materialTitle 参数
+
+### 修复
+- getBatchProgress 改用 createQueryBuilder + getRawMany 避免 TypeORM relation 序列化问题
+- onTogglePlay 在 finished 状态不再触发播放
+
+---
+
 ## [2.0.0] — 2026-06-01
 
 ### 新增
