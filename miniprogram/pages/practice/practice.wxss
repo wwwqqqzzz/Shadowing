@@ -59,8 +59,17 @@
   gap: 24rpx;
 }
 
-.modal-option-icon {
-  font-size: 44rpx;
+.modal-option-badge {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: var(--color-brand-dim);
+  color: var(--color-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
   flex-shrink: 0;
 }
 
@@ -113,15 +122,10 @@ page {
   z-index: 100;
 }
 
-.finished-emoji {
-  font-size: 48rpx;
-  margin-bottom: 16rpx;
-}
-
 .finished-title {
-  font-size: 36rpx;
-  font-weight: 600;
-  color: var(--color-text-primary);
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--color-brand);
   margin-bottom: 24rpx;
 }
 
@@ -313,14 +317,15 @@ page {
 }
 
 .rec-btn {
-  width: 80rpx;
+  min-width: 120rpx;
   height: 80rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: 40rpx;
   background: var(--color-bg-elevated);
   border: 2rpx solid var(--color-border-strong);
+  padding: 0 28rpx;
 }
 
 .rec-btn:active {
@@ -329,25 +334,25 @@ page {
 
 .rec-btn.recording {
   border-color: var(--color-recording);
+  background: rgba(192, 97, 107, 0.08);
 }
 
-.rec-icon {
-  font-size: 30rpx;
+.rec-label {
+  font-size: 26rpx;
   color: var(--color-text-secondary);
+  font-weight: 500;
 }
 
-.rec-btn.recording .rec-icon {
+.rec-btn.recording .rec-label {
   color: var(--color-recording);
-  animation: recPulse 0.8s ease-in-out infinite;
 }
 
-.playback-icon {
+.skip-label {
+  color: var(--color-text-tertiary);
+}
+
+.playback-icon-label {
   color: var(--color-brand);
-}
-
-.skip-icon {
-  font-size: 24rpx;
-  color: var(--color-text-secondary);
 }
 
 .recording-label {
@@ -373,37 +378,39 @@ page {
 }
 
 .ctrl-btn {
-  width: 80rpx;
-  height: 80rpx;
+  min-width: 80rpx;
+  height: 72rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: 36rpx;
+  background: var(--color-bg-elevated);
 }
 
 .ctrl-btn:active {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .ctrl-btn.play-btn {
-  width: 104rpx;
-  height: 104rpx;
-  background: rgba(125, 206, 160, 0.1);
+  min-width: 160rpx;
+  height: 88rpx;
+  border-radius: 44rpx;
+  background: var(--color-brand);
 }
 
 .ctrl-btn.play-btn:active {
-  background: rgba(125, 206, 160, 0.2);
+  opacity: 0.85;
 }
 
-.ctrl-icon {
-  font-size: 30rpx;
+.ctrl-text {
+  font-size: 22rpx;
   color: var(--color-text-secondary);
 }
 
-.play-icon {
-  font-size: 38rpx;
-  color: var(--color-brand);
+.play-text {
+  font-size: 28rpx;
+  color: var(--color-bg-base);
+  font-weight: 600;
 }
 
 .speed-label {
@@ -413,10 +420,10 @@ page {
 }
 
 .loop-on {
-  background: rgba(125, 206, 160, 0.12);
+  background: var(--color-brand-dim);
 }
 
-.loop-on .ctrl-icon {
+.loop-on .ctrl-text {
   color: var(--color-brand);
 }
 
@@ -424,20 +431,20 @@ page {
 
 .feedback-area {
   background: var(--color-bg-elevated);
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin: 0 40rpx 12px;
+  border-radius: 24rpx;
+  padding: 24rpx 32rpx;
+  margin: 0 32rpx 24rpx;
   flex-shrink: 0;
 }
 
 .feedback-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 24rpx;
 }
 
 .feedback-score {
-  font-size: 36px;
+  font-size: 72rpx;
   font-weight: 700;
   line-height: 1;
 }
@@ -457,33 +464,33 @@ page {
 .feedback-words {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 12rpx;
 }
 
 .missing-tag {
   background: var(--color-error);
   color: var(--color-score-low);
   font-size: 22rpx;
-  border-radius: 4px;
-  padding: 2px 6px;
+  border-radius: 8rpx;
+  padding: 4rpx 12rpx;
   line-height: 1.5;
 }
 
 .feedback-texts {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 10px;
+  gap: 8rpx;
+  margin-top: 20rpx;
 }
 
 .feedback-recognized {
-  font-size: 12px;
+  font-size: 24rpx;
   color: var(--color-text-secondary);
   line-height: 1.6;
 }
 
 .feedback-original {
-  font-size: 12px;
+  font-size: 24rpx;
   color: var(--color-text-primary);
   line-height: 1.6;
 }

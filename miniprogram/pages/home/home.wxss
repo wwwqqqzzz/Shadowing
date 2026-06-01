@@ -47,8 +47,9 @@
 
 .streak-flame {
   font-size: 30rpx;
-  color: var(--color-text-primary);
-  font-weight: 500;
+  color: var(--color-brand);
+  font-weight: 700;
+  letter-spacing: 2rpx;
 }
 
 .streak-start {
@@ -71,11 +72,11 @@
 
 /* Hero card */
 .hero-card {
-  background: linear-gradient(145deg, var(--color-brand-dim) 0%, var(--color-bg-base) 100%);
-  border-radius: 24rpx;
-  padding: 48rpx 40rpx;
+  background: var(--color-bg-elevated);
+  border-radius: 20rpx;
+  padding: 40rpx 36rpx;
   margin-bottom: 24rpx;
-  border: 1rpx solid var(--color-border-default);
+  border-left: 6rpx solid var(--color-brand);
 }
 
 .hero-card-tap {
@@ -176,11 +177,11 @@
 .wrong-left {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 16rpx;
 }
 
 .wrong-icon {
-  font-size: 32rpx;
+  display: none;
 }
 
 .wrong-label {

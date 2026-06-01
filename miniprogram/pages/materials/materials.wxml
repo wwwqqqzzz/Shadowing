@@ -11,7 +11,6 @@
     <!-- Search + Favorite toggle -->
     <view class="filter-top">
       <view class="search-toggle" bindtap="onToggleSearch">
-        <text class="search-icon">🔍</text>
         <text wx:if="{{!showSearch}}">搜索</text>
         <text wx:else>收起</text>
       </view>
@@ -90,18 +89,6 @@
         bindtap="onTapMaterial"
         hover-class="card-tap"
       >
-        <image
-          class="card-cover"
-          src="{{item.coverUrl}}"
-          mode="aspectFill"
-          wx:if="{{item.coverUrl}}"
-        />
-        <view class="card-cover-placeholder" wx:else></view>
-
-        <view class="card-fav" data-id="{{item.id}}" data-favorited="{{item.isFavorited}}" catchtap="onToggleFavorite">
-          <text class="card-fav-icon {{item.isFavorited ? 'fav-filled' : ''}}">♥</text>
-        </view>
-
         <view class="card-body">
           <text class="card-title">{{item.title}}</text>
           <view class="card-tags">

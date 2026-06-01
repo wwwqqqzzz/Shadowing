@@ -29,10 +29,6 @@ page {
   border-radius: 99rpx;
 }
 
-.search-icon {
-  font-size: 24rpx;
-}
-
 .filter-toggle-row {
   display: flex;
   gap: 12rpx;
@@ -132,19 +128,21 @@ page {
 
 .card-fav {
   position: absolute;
-  top: 16rpx;
-  right: 16rpx;
+  top: 20rpx;
+  right: 20rpx;
   z-index: 2;
-  padding: 8rpx;
+  padding: 4rpx;
 }
 
 .card-fav-icon {
-  font-size: 32rpx;
+  font-size: 28rpx;
   color: var(--color-text-tertiary);
+  opacity: 0.5;
 }
 
 .card-fav-icon.fav-filled {
   color: var(--color-warning);
+  opacity: 1;
 }
 
 /* ─── Loading ─────────────────────────────────────────── */
@@ -208,28 +206,16 @@ page {
 
 .material-card {
   position: relative;
-  margin: 12rpx 32rpx;
+  margin: 0 32rpx 16rpx;
   background: var(--color-bg-elevated);
-  border-radius: 24rpx;
-  overflow: hidden;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  border-left: 4rpx solid transparent;
 }
 
+.material-card:active,
 .card-tap {
   opacity: 0.8;
-}
-
-/* ─── Cover ───────────────────────────────────────────── */
-
-.card-cover {
-  width: 100%;
-  height: 320rpx;
-  display: block;
-}
-
-.card-cover-placeholder {
-  width: 100%;
-  height: 320rpx;
-  background: linear-gradient(135deg, var(--color-border-default) 0%, var(--color-bg-elevated) 100%);
 }
 
 /* ─── Card body ───────────────────────────────────────── */

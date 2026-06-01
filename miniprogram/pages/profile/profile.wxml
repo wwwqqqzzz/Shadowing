@@ -20,7 +20,7 @@
         <text class="stats-label">分钟</text>
       </view>
       <view class="stats-card streak-card" bindtap="onToggleCalendar" hover-class="item-tap">
-        <text class="stats-number">🔥 {{currentStreak}}</text>
+        <text class="stats-number">{{currentStreak}}</text>
         <text class="stats-label">连续天数</text>
         <text class="streak-hint" wx:if="{{!todayDone}}">今天还没练</text>
       </view>
@@ -136,7 +136,7 @@
     <view class="settings-row wrong-book-row" bindtap="onTapWrongBook" hover-class="item-tap">
       <view class="wrong-book-left">
         <text class="settings-label">错题本</text>
-        <text class="wrong-hint" wx:if="{{wrongDaysSince >= 3}}">{{wrongDaysSince >= 7 ? '🔥' : '⏰'}} 已 {{wrongDaysSince}} 天未复习</text>
+        <text class="wrong-hint" wx:if="{{wrongDaysSince >= 3}}">{{wrongDaysSince >= 7 ? '紧急' : '提醒'}} 已 {{wrongDaysSince}} 天未复习</text>
       </view>
       <view class="wrong-book-right">
         <text class="wrong-badge" wx:if="{{wrongCount > 0}}">{{wrongCount}}</text>

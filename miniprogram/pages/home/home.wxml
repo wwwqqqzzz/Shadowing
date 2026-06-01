@@ -11,7 +11,7 @@
     <!-- 区域一：打卡状态栏 -->
     <view class="streak-bar">
       <block wx:if="{{currentStreak > 0}}">
-        <text class="streak-flame">🔥 {{currentStreak}}天连续练习</text>
+        <text class="streak-flame">{{currentStreak}} 天连续</text>
         <text class="streak-today {{todayDone ? 'done' : 'undone'}}">
           {{todayDone ? '今天已打卡 ✓' : '今天还没练'}}
         </text>
@@ -65,7 +65,6 @@
     <!-- 区域三：错题提醒 -->
     <view class="wrong-card" wx:if="{{wrongCount > 0}}" bindtap="onTapWrongBook" hover-class="wrong-card-tap">
       <view class="wrong-left">
-        <text class="wrong-icon">📚</text>
         <text class="wrong-label">错题本</text>
         <text class="wrong-count">{{wrongCount}} 句待复习</text>
       </view>

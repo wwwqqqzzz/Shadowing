@@ -1,5 +1,4 @@
 const BASE_URL = 'http://localhost:3000/api'
-const { login } = require('./auth')
 
 const request = ({ url, method = 'GET', data = {} }) => {
   return new Promise((resolve, reject) => {
@@ -16,6 +15,7 @@ const request = ({ url, method = 'GET', data = {} }) => {
         if (res.statusCode === 401) {
           wx.removeStorageSync('token')
           wx.removeStorageSync('user')
+          const { login } = require('./auth')
           login().then(() => {
             resolve(request({ url, method, data }))
           }).catch(() => {

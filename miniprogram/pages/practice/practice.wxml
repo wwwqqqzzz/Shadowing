@@ -14,7 +14,7 @@
           hover-class="modal-option-tap"
         >
           <view class="modal-option-left">
-            <text class="modal-option-icon">{{item.icon}}</text>
+            <view class="modal-option-badge">{{item.name[0]}}</view>
             <view class="modal-option-info">
               <text class="modal-option-name">{{item.name}}</text>
               <text class="modal-option-desc">{{item.desc}}</text>
@@ -27,7 +27,6 @@
 
   <!-- Finished overlay -->
   <view wx:if="{{status === 'finished' && finishedData}}" class="finished-wrap">
-    <text class="finished-emoji">🎉</text>
     <text class="finished-title">练习完成</text>
     <text class="finished-material">{{finishedData.title}}</text>
     <view class="finished-stats">
@@ -74,13 +73,13 @@
       <text class="recording-label" wx:if="{{recording}}">录音中…</text>
       <view class="recorder-row">
         <view class="rec-btn {{recording ? 'recording' : ''}}" bindtap="onToggleRecord">
-          <text class="rec-icon">{{recording ? '🔴' : '🎙'}}</text>
+          <text class="rec-label">{{recording ? '停止' : '录音'}}</text>
         </view>
         <view class="rec-btn" wx:if="{{recordPath && !recording}}" bindtap="onPlayback">
-          <text class="rec-icon playback-icon">🔊</text>
+          <text class="rec-label">回放</text>
         </view>
         <view class="rec-btn" bindtap="onSkipNext">
-          <text class="rec-icon skip-icon">▶▶</text>
+          <text class="rec-label skip-label">跳过</text>
         </view>
       </view>
     </view>
@@ -106,16 +105,16 @@
       <text class="speed-label">{{speed}}x</text>
     </view>
     <view class="ctrl-btn" bindtap="onSkipPrev">
-      <text class="ctrl-icon">◀</text>
+      <text class="ctrl-text">上一句</text>
     </view>
     <view class="ctrl-btn play-btn" bindtap="onTogglePlay">
-      <text class="ctrl-icon play-icon">{{playing ? '❚❚' : '▶'}}</text>
+      <text class="play-text">{{playing ? '暂停' : '播放'}}</text>
     </view>
     <view class="ctrl-btn" bindtap="onSkipNext">
-      <text class="ctrl-icon">▶</text>
+      <text class="ctrl-text">下一句</text>
     </view>
     <view class="ctrl-btn {{loop ? 'loop-on' : ''}}" bindtap="onLoop">
-      <text class="ctrl-icon">↻</text>
+      <text class="ctrl-text loop-text">{{loop ? '循环' : '单次'}}</text>
     </view>
   </view>
 </view>

@@ -28,9 +28,9 @@ Page({
     finishedData: null,
     waitMs: DEFAULT_WAIT_MS,
     modeModes: [
-      { key: 'free', icon: '🎧', name: '自由模式', desc: '播完自动进下一句，不录音，适合通勤听' },
-      { key: 'auto', icon: '🎙', name: '自动录音', desc: '播完自动录音评分，适合认真练习' },
-      { key: 'manual', icon: '✋', name: '手动模式', desc: '自己控制录音和继续，适合反复练某句' },
+      { key: 'free', icon: '', name: '自由模式', desc: '播完自动进下一句，不录音，适合通勤听' },
+      { key: 'auto', icon: '', name: '自动录音', desc: '播完自动录音评分，适合认真练习' },
+      { key: 'manual', icon: '', name: '手动模式', desc: '自己控制录音和继续，适合反复练某句' },
     ]
   },
 
