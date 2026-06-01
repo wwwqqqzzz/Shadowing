@@ -1,4 +1,4 @@
-const { getMyStats, getWrongCount, getStreakStats } = require('../../utils/api')
+const { getMyStats, getWeeklyStats, getWrongCount, getStreakStats } = require('../../utils/api')
 const { formatDuration, formatRelativeTime } = require('../../utils/format')
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
@@ -52,6 +52,10 @@ Page({
   data: {
     totalSentences: 0,
     totalDurationText: '0:00',
+    overallAvgScore: 0,
+    topMaterialText: '',
+    weeklyData: [],
+    barMax: 1,
     recentRecords: [],
     wrongCount: 0,
     wrongDaysSince: null,
@@ -81,10 +85,11 @@ Page({
 
   async onShow() {
     try {
-      const [stats, wrongData, streak] = await Promise.all([
+      const [stats, wrongData, streak, weekly] = await Promise.all([
         getMyStats(),
         getWrongCount().catch(() => ({ count: 0, lastReviewedAt: null })),
-        getStreakStats().catch(() => ({ currentStreak: 0, longestStreak: 0, totalDays: 0, todayDone: false, calendarDates: [] }))
+        getStreakStats().catch(() => ({ currentStreak: 0, longestStreak: 0, totalDays: 0, todayDone: false, calendarDates: [] })),
+        getWeeklyStats().catch(() => ({ weeklyData: [], overallAvgScore: 0, topMaterial: null })),
       ])
 
       const daysSinceReview = wrongData.lastReviewedAt
@@ -93,9 +98,22 @@ Page({
 
       this._doneSet = new Set(streak.calendarDates || [])
 
+      const topMaterialText = weekly.topMaterial
+        ? `${weekly.topMaterial.title} · ${weekly.topMaterial.count}次`
+        : ''
+
+      const barMax = Math.max(1, ...weekly.weeklyData.map(d => d.count))
+
       this.setData({
         totalSentences: stats.totalSentences,
         totalDurationText: formatDuration(stats.totalDurationMs),
+        overallAvgScore: weekly.overallAvgScore,
+        topMaterialText,
+        weeklyData: weekly.weeklyData.map(d => ({
+          ...d,
+          barHeight: Math.round((d.count / barMax) * 100),
+        })),
+        barMax,
         recentRecords: stats.recentRecords.map(r => ({
           ...r,
           createdAtText: formatRelativeTime(r.createdAt),

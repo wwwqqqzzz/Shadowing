@@ -88,6 +88,96 @@ page {
 
 /* ─── Streak detail ──────────────────────────────────── */
 
+.extra-row {
+  display: flex;
+  gap: 16rpx;
+  padding: 0 32rpx;
+  margin-top: 16rpx;
+}
+
+.extra-item {
+  flex: 1;
+  background: #1a1a1a;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.extra-label {
+  font-size: 22rpx;
+  color: #555;
+}
+
+.extra-value {
+  font-size: 26rpx;
+  color: #ccc;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── 7-day heatmap chart ─────────────────────────────── */
+
+.weekly-chart {
+  margin: 24rpx 32rpx 0;
+  background: #1a1a1a;
+  border-radius: 20rpx;
+  padding: 28rpx 20rpx 16rpx;
+}
+
+.weekly-bars {
+  display: flex;
+  align-items: flex-end;
+  height: 240rpx;
+  gap: 8rpx;
+}
+
+.weekly-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  position: relative;
+}
+
+.weekly-bar-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.weekly-bar-fill {
+  width: 70%;
+  min-height: 6rpx;
+  border-radius: 6rpx 6rpx 0 0;
+  background: #222;
+  transition: height 0.3s ease;
+}
+
+.weekly-bar-fill.active {
+  background: #a8e6cf;
+}
+
+.weekly-bar-label {
+  font-size: 20rpx;
+  color: #444;
+  margin-top: 10rpx;
+}
+
+.weekly-bar-count {
+  font-size: 18rpx;
+  color: #a8e6cf;
+  position: absolute;
+  top: 0;
+  text-align: center;
+  width: 100%;
+}
+
 .streak-detail {
   font-size: 12px;
   color: #555;

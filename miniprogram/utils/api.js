@@ -21,6 +21,9 @@ const getMyRecords = (params = {}) =>
 const getMyStats = () =>
   request({ url: '/practice-records/my/stats' })
 
+const getWeeklyStats = () =>
+  request({ url: '/practice-records/my/weekly-stats' })
+
 const getWrongSentences = () =>
   request({ url: '/practice-records/my/wrong' })
 
@@ -57,7 +60,7 @@ const getMyFavorites = () =>
 module.exports = {
   getMaterials, getMaterial, getSentences,
   createPracticeRecord,
-  getMyRecords, getMyStats,
+  getMyRecords, getMyStats, getWeeklyStats,
   getWrongSentences, getWrongCount, getStreakStats,
   getLastProgress, saveProgress, getProgress,
   addFavorite, removeFavorite, getMyFavorites,

@@ -326,6 +326,67 @@ export class PracticeRecordsService {
     };
   }
 
+  async getWeeklyStats(userId: string) {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const dailyRows = await this.recordRepo
+      .createQueryBuilder('record')
+      .select("TO_CHAR(record.\"createdAt\", 'YYYY-MM-DD')", 'date')
+      .addSelect('COUNT(*)', 'count')
+      .addSelect('COALESCE(AVG(record.score), 0)', 'avgScore')
+      .where('record.userId = :userId', { userId })
+      .andWhere('record."createdAt" >= :since', { since: sevenDaysAgo })
+      .groupBy("TO_CHAR(record.\"createdAt\", 'YYYY-MM-DD')")
+      .orderBy('date', 'ASC')
+      .getRawMany();
+
+    const dailyMap = new Map(dailyRows.map(r => [r.date, { count: parseInt(r.count, 10), avgScore: Math.round(parseFloat(r.avgScore)) }]));
+    const days = ['日', '一', '二', '三', '四', '五', '六'];
+    const weeklyData: { date: string; dayLabel: string; count: number; avgScore: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const entry = dailyMap.get(dateStr) || { count: 0, avgScore: 0 };
+      weeklyData.push({
+        date: dateStr,
+        dayLabel: days[d.getDay()],
+        count: entry.count,
+        avgScore: entry.avgScore,
+      });
+    }
+
+    const scoreResult = await this.recordRepo
+      .createQueryBuilder('record')
+      .select('COALESCE(AVG(record.score), 0)', 'avgScore')
+      .where('record.userId = :userId', { userId })
+      .andWhere('record.score IS NOT NULL')
+      .getRawOne();
+    const overallAvgScore = Math.round(parseFloat(scoreResult?.avgScore || '0'));
+
+    const topMaterialRow = await this.recordRepo
+      .createQueryBuilder('record')
+      .select('material.title', 'title')
+      .addSelect('COUNT(*)', 'count')
+      .innerJoin('record.sentence', 'sentence')
+      .innerJoin('sentence.material', 'material')
+      .where('record.userId = :userId', { userId })
+      .groupBy('material.title')
+      .orderBy('count', 'DESC')
+      .limit(1)
+      .getRawOne();
+
+    return {
+      weeklyData,
+      overallAvgScore,
+      topMaterial: topMaterialRow
+        ? { title: topMaterialRow.title, count: parseInt(topMaterialRow.count, 10) }
+        : null,
+    };
+  }
+
   async getWrongCount(userId: string) {
     const threshold = await this.getMasteryThreshold();
 

@@ -26,6 +26,31 @@
       </view>
     </view>
 
+    <!-- Area 1.5: Extra stats row -->
+    <view class="extra-row" wx:if="{{overallAvgScore > 0 || topMaterialText}}">
+      <view class="extra-item" wx:if="{{overallAvgScore > 0}}">
+        <text class="extra-label">平均得分</text>
+        <text class="extra-value">{{overallAvgScore}} 分</text>
+      </view>
+      <view class="extra-item" wx:if="{{topMaterialText}}">
+        <text class="extra-label">最常练习</text>
+        <text class="extra-value">{{topMaterialText}}</text>
+      </view>
+    </view>
+
+    <!-- Area 1.6: 7-day heatmap bar chart -->
+    <view class="weekly-chart" wx:if="{{weeklyData.length > 0}}">
+      <view class="weekly-bars">
+        <view class="weekly-bar-col" wx:for="{{weeklyData}}" wx:key="date">
+          <view class="weekly-bar-track">
+            <view class="weekly-bar-fill {{item.count > 0 ? 'active' : ''}}" style="height: {{item.count > 0 ? item.barHeight : 3}}%;"></view>
+          </view>
+          <text class="weekly-bar-label">{{item.dayLabel}}</text>
+          <text class="weekly-bar-count" wx:if="{{item.count > 0}}">{{item.count}}</text>
+        </view>
+      </view>
+    </view>
+
     <!-- Streak detail -->
     <view class="streak-detail">
       最长连续 {{longestStreak}} 天  ·  累计打卡 {{totalDays}} 天

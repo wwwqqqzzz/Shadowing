@@ -33,6 +33,12 @@ export class PracticeRecordsController {
     return this.recordsService.getLastProgress(req.user.id);
   }
 
+  @Get('my/weekly-stats')
+  @UseGuards(AuthGuard('jwt'))
+  async getWeeklyStats(@Req() req) {
+    return this.recordsService.getWeeklyStats(req.user.id);
+  }
+
   @Get('my/streak')
   @UseGuards(AuthGuard('jwt'))
   async getStreak(@Req() req) {
