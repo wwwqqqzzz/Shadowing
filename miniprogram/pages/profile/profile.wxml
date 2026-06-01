@@ -17,11 +17,11 @@
       </view>
       <view class="stats-card">
         <text class="stats-number">{{totalDurationText}}</text>
-        <text class="stats-label">分钟</text>
+        <text class="stats-label">时长</text>
       </view>
       <view class="stats-card streak-card" bindtap="onToggleCalendar" hover-class="item-tap">
         <text class="stats-number">{{currentStreak}}</text>
-        <text class="stats-label">连续天数</text>
+        <text class="stats-label">连续天</text>
         <text class="streak-hint" wx:if="{{!todayDone}}">今天还没练</text>
       </view>
     </view>

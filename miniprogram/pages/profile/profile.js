@@ -125,7 +125,7 @@ Page({
         longestStreak: streak.longestStreak,
         totalDays: streak.totalDays,
         todayDone: streak.todayDone,
-        streakEmoji: '🔥',
+        streakEmoji: '',
         calendarYear: new Date().getFullYear(),
         calendarMonth: new Date().getMonth(),
         loading: false

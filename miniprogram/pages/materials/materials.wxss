@@ -206,11 +206,11 @@ page {
 
 .material-card {
   position: relative;
-  margin: 0 32rpx 16rpx;
+  margin: 0 32rpx 12rpx;
   background: var(--color-bg-elevated);
   border-radius: 16rpx;
   padding: 28rpx;
-  border-left: 4rpx solid transparent;
+  border-left: 4rpx solid var(--color-bg-elevated);
 }
 
 .material-card:active,
@@ -244,10 +244,7 @@ page {
 
 .tag-source {
   font-size: 22rpx;
-  color: var(--color-text-secondary);
-  background: var(--color-border-default);
-  padding: 4rpx 16rpx;
-  border-radius: 99rpx;
+  color: var(--color-text-tertiary);
 }
 
 .tag-accent {
@@ -307,4 +304,18 @@ page {
   background: var(--color-brand);
   border-radius: 2rpx;
   transition: width 0.3s ease;
+}
+
+/* ─── Card level accent ─── */
+
+.card-level-beginner {
+  border-left-color: var(--color-brand);
+}
+
+.card-level-intermediate {
+  border-left-color: var(--color-score-mid);
+}
+
+.card-level-advanced {
+  border-left-color: var(--color-score-low);
 }

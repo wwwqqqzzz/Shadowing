@@ -80,7 +80,7 @@
     <!-- Material list -->
     <view class="material-list" wx:else>
       <view
-        class="material-card"
+        class="material-card card-level-{{item.level}}"
         wx:for="{{filtered}}"
         wx:key="id"
         data-id="{{item.id}}"
@@ -93,7 +93,6 @@
           <text class="card-title">{{item.title}}</text>
           <view class="card-tags">
             <text class="tag-source" wx:if="{{item.source}}">{{item.source}}</text>
-            <text class="tag-accent" wx:if="{{item.accent && item.accent !== 'american'}}">{{item.accent === 'british' ? '英式' : item.accent === 'australian' ? '澳式' : item.accent === 'business' ? '商务' : item.accent}}</text>
             <text class="tag-level tag-{{item.level}}">{{item.level === 'beginner' ? '入门' : item.level === 'intermediate' ? '中级' : '高级'}}</text>
             <text class="tag-duration">{{item._durationText}}</text>
             <text class="progress-text" wx:if="{{item._progressText}}">{{item._progressText}}</text>

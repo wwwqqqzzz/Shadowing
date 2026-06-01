@@ -13,7 +13,7 @@
       <block wx:if="{{currentStreak > 0}}">
         <text class="streak-flame">{{currentStreak}} 天连续</text>
         <text class="streak-today {{todayDone ? 'done' : 'undone'}}">
-          {{todayDone ? '今天已打卡 ✓' : '今天还没练'}}
+          {{todayDone ? '今天已打卡' : '今天还没练'}}
         </text>
       </block>
       <block wx:else>
@@ -21,44 +21,39 @@
       </block>
     </view>
 
-    <!-- 区域二：主 Hero 按钮 -->
+    <!-- 区域二：主 Hero -->
     <view class="hero-card" bindtap="onTapHero" hover-class="hero-card-tap">
 
       <!-- continue 状态 -->
       <block wx:if="{{heroState === 'continue'}}">
-        <text class="hero-title">继续上次练习</text>
-        <text class="hero-material">{{lastProgress.material.title}}</text>
-        <view class="hero-progress-row">
-          <text class="hero-progress-text">第 {{lastProgress.lastSentenceOrder}} 句 / 共 {{lastProgress.totalSentences}} 句</text>
-          <view class="hero-progress-bar">
-            <view class="hero-progress-fill" style="width: {{lastProgress.progressPercent}}%"></view>
-          </view>
+        <text class="hero-label">继续</text>
+        <text class="hero-title">{{lastProgress.material.title}}</text>
+        <view class="hero-meta">
+          <text class="hero-meta-item">{{lastProgress.totalSentences}} 句</text>
+          <text class="hero-meta-sep">·</text>
+          <text class="hero-meta-item">{{lastProgress.lastSentenceOrder}} / {{lastProgress.totalSentences}}</text>
         </view>
-        <view class="hero-cta">
-          <text class="hero-cta-text">▶ 继续</text>
+        <view class="hero-progress-bar">
+          <view class="hero-progress-fill" style="width: {{lastProgress.progressPercent}}%"></view>
         </view>
       </block>
 
       <!-- replay 状态 -->
       <block wx:elif="{{heroState === 'replay'}}">
-        <text class="hero-title">上次已练完</text>
-        <text class="hero-material">{{lastProgress.material.title}}</text>
-        <view class="hero-tags">
-          <text class="hero-tag">{{lastProgress.totalSentences}} 句</text>
-          <text class="hero-tag">从头开始</text>
-        </view>
-        <view class="hero-cta">
-          <text class="hero-cta-text">↺ 重新练</text>
+        <text class="hero-label">已完成</text>
+        <text class="hero-title">{{lastProgress.material.title}}</text>
+        <view class="hero-meta">
+          <text class="hero-meta-item">{{lastProgress.totalSentences}} 句</text>
+          <text class="hero-meta-sep">·</text>
+          <text class="hero-meta-item">从头开始</text>
         </view>
       </block>
 
       <!-- start 状态 -->
       <block wx:else>
-        <text class="hero-title">开始你的第一次练习</text>
-        <text class="hero-sub">从这里出发</text>
-        <view class="hero-cta">
-          <text class="hero-cta-text">▶ 去选择</text>
-        </view>
+        <text class="hero-label">开始</text>
+        <text class="hero-title">选择一个素材</text>
+        <text class="hero-sub">从跟读开始提升英语</text>
       </block>
     </view>
 
@@ -66,18 +61,27 @@
     <view class="wrong-card" wx:if="{{wrongCount > 0}}" bindtap="onTapWrongBook" hover-class="wrong-card-tap">
       <view class="wrong-left">
         <text class="wrong-label">错题本</text>
-        <text class="wrong-count">{{wrongCount}} 句待复习</text>
+        <text class="wrong-count">{{wrongCount}} 句</text>
       </view>
       <text class="wrong-arrow">›</text>
     </view>
 
-    <!-- 区域四：快捷入口 -->
+    <!-- 区域四：难度快速入口 -->
     <view class="quick-section">
-      <text class="quick-title">难度快速筛选</text>
-      <view class="quick-row">
-        <view class="quick-tag" data-level="beginner" bindtap="onTapLevelFilter">初级</view>
-        <view class="quick-tag quick-tag-mid" data-level="intermediate" bindtap="onTapLevelFilter">中级</view>
-        <view class="quick-tag quick-tag-adv" data-level="advanced" bindtap="onTapLevelFilter">高级</view>
+      <text class="quick-title">按难度浏览</text>
+      <view class="quick-grid">
+        <view class="quick-card" data-level="beginner" bindtap="onTapLevelFilter" hover-class="quick-card-tap">
+          <text class="quick-card-level">初级</text>
+          <text class="quick-card-hint">基础跟读</text>
+        </view>
+        <view class="quick-card" data-level="intermediate" bindtap="onTapLevelFilter" hover-class="quick-card-tap">
+          <text class="quick-card-level">中级</text>
+          <text class="quick-card-hint">进阶训练</text>
+        </view>
+        <view class="quick-card" data-level="advanced" bindtap="onTapLevelFilter" hover-class="quick-card-tap">
+          <text class="quick-card-level">高级</text>
+          <text class="quick-card-hint">挑战流利</text>
+        </view>
       </view>
       <view class="quick-all" bindtap="onTapAllMaterials">查看全部素材 ›</view>
     </view>
