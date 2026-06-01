@@ -20,14 +20,16 @@ async function bootstrap() {
     dir = parent;
   }
 
+  const uploadsAudioPath = resolve(dir, 'backend', 'uploads', 'audio');
   const tmpAudioPath = resolve(dir, 'tmp');
   const mockAudioPath = resolve(dir, 'miniprogram', 'mock', 'audio');
+  app.useStaticAssets(uploadsAudioPath, { prefix: '/audio/', setHeaders: (res) => { res.setHeader('Cache-Control', 'no-store'); } });
   app.useStaticAssets(tmpAudioPath, { prefix: '/audio/', setHeaders: (res) => { res.setHeader('Cache-Control', 'no-store'); } });
   app.useStaticAssets(mockAudioPath, { prefix: '/audio/', setHeaders: (res) => { res.setHeader('Cache-Control', 'no-store'); } });
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
   console.log(`Server running on http://localhost:${port}/api`);
-  console.log(`Audio static: ${tmpAudioPath} + ${mockAudioPath} → /audio/`);
+  console.log(`Audio static: ${uploadsAudioPath} + ${tmpAudioPath} + ${mockAudioPath} → /audio/`);
 }
 bootstrap();

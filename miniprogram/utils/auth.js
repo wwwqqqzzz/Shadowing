@@ -1,10 +1,12 @@
 const request = require('./request')
 
-const login = () => {
-  return new Promise((resolve, reject) => {
-    const token = wx.getStorageSync('token')
-    if (token) return resolve(token)
+const MAX_RETRY = 1
 
+const login = (retry = 0) => {
+  const token = wx.getStorageSync('token')
+  if (token) return Promise.resolve(token)
+
+  return new Promise((resolve, reject) => {
     wx.login({
       success: async ({ code }) => {
         try {
@@ -17,7 +19,11 @@ const login = () => {
           wx.setStorageSync('user', res.user)
           resolve(res.token)
         } catch (err) {
-          reject(err)
+          if (retry < MAX_RETRY) {
+            setTimeout(() => login(retry + 1).then(resolve).catch(reject), 1000)
+          } else {
+            reject(err)
+          }
         }
       },
       fail: reject
@@ -25,4 +31,8 @@ const login = () => {
   })
 }
 
-module.exports = { login }
+const isLoggedIn = () => {
+  return !!wx.getStorageSync('token')
+}
+
+module.exports = { login, isLoggedIn }

@@ -1,0 +1,23 @@
+<view class="container">
+  <view class="section-title">跟读模式</view>
+
+  <view class="mode-list">
+    <view
+      wx:for="{{modes}}"
+      wx:key="key"
+      class="mode-card {{item.key === currentMode ? 'active' : ''}}"
+      data-mode="{{item.key}}"
+      bindtap="onSelectMode"
+      hover-class="mode-card-tap"
+    >
+      <view class="mode-left">
+        <text class="mode-icon">{{item.icon}}</text>
+        <view class="mode-info">
+          <text class="mode-name">{{item.key === 'free' ? '自由模式' : (item.key === 'auto' ? '自动录音' : '手动模式')}}</text>
+          <text class="mode-desc">{{item.desc}}</text>
+        </view>
+      </view>
+      <text class="mode-check" wx:if="{{item.key === currentMode}}">✓</text>
+    </view>
+  </view>
+</view>

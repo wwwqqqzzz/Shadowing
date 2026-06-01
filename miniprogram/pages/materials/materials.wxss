@@ -9,6 +9,126 @@ page {
   background: #0f0f0f;
 }
 
+/* ─── Filter top bar ─────────────────────────────────── */
+
+.filter-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 32rpx 0;
+}
+
+.search-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 26rpx;
+  color: #888;
+  padding: 10rpx 20rpx;
+  background: #1a1a1a;
+  border-radius: 99rpx;
+}
+
+.search-icon {
+  font-size: 24rpx;
+}
+
+.fav-toggle {
+  font-size: 24rpx;
+  color: #666;
+  padding: 10rpx 24rpx;
+  background: #1a1a1a;
+  border-radius: 99rpx;
+}
+
+.fav-active {
+  color: #e8a87c;
+  background: rgba(232, 168, 124, 0.15);
+}
+
+/* ─── Search bar ──────────────────────────────────────── */
+
+.search-bar {
+  padding: 12rpx 32rpx 0;
+}
+
+.search-input {
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 28rpx;
+  padding: 16rpx 24rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid #333;
+}
+
+/* ─── Filter section ─────────────────────────────────── */
+
+.filter-section {
+  padding: 12rpx 32rpx 0;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 10rpx;
+}
+
+.filter-label {
+  font-size: 24rpx;
+  color: #888;
+  min-width: 56rpx;
+  flex-shrink: 0;
+}
+
+.filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.filter-tag {
+  font-size: 22rpx;
+  color: #888;
+  background: #2a2a2a;
+  padding: 6rpx 20rpx;
+  border-radius: 99rpx;
+  white-space: nowrap;
+}
+
+.filter-tag.active {
+  background: #a8e6cf;
+  color: #0f0f0f;
+  font-weight: 500;
+}
+
+/* ─── Results count ───────────────────────────────────── */
+
+.results-count {
+  padding: 12rpx 32rpx;
+  font-size: 22rpx;
+  color: #666;
+}
+
+/* ─── Card favorite button ────────────────────────────── */
+
+.card-fav {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  z-index: 2;
+  padding: 8rpx;
+}
+
+.card-fav-icon {
+  font-size: 32rpx;
+  color: #555;
+}
+
+.card-fav-icon.fav-filled {
+  color: #e8a87c;
+}
+
 /* ─── Loading ─────────────────────────────────────────── */
 
 .loading-area {
@@ -65,10 +185,11 @@ page {
 /* ─── Card list ───────────────────────────────────────── */
 
 .material-list {
-  padding: 24rpx 0;
+  padding: 12rpx 0 24rpx;
 }
 
 .material-card {
+  position: relative;
   margin: 12rpx 32rpx;
   background: #1a1a1a;
   border-radius: 24rpx;
@@ -120,6 +241,14 @@ page {
 .tag-source {
   font-size: 22rpx;
   color: #888;
+  background: #2a2a2a;
+  padding: 4rpx 16rpx;
+  border-radius: 99rpx;
+}
+
+.tag-accent {
+  font-size: 22rpx;
+  color: #999;
   background: #2a2a2a;
   padding: 4rpx 16rpx;
   border-radius: 99rpx;

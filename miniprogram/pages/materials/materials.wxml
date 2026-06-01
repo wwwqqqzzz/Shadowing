@@ -7,35 +7,105 @@
     </view>
   </view>
 
-  <view class="empty-state" wx:elif="{{materials.length === 0}}">
-    <text class="empty-text">暂无素材</text>
-  </view>
+  <block wx:else>
+    <!-- Search + Favorite toggle -->
+    <view class="filter-top">
+      <view class="search-toggle" bindtap="onToggleSearch">
+        <text class="search-icon">🔍</text>
+        <text wx:if="{{!showSearch}}">搜索</text>
+        <text wx:else>收起</text>
+      </view>
+      <view class="fav-toggle {{filters.favOnly ? 'fav-active' : ''}}" bindtap="onToggleFavOnly">
+        <text>{{filters.favOnly ? '♥ 收藏中' : '♥ 收藏'}}</text>
+      </view>
+    </view>
 
-  <view class="material-list" wx:else>
-    <view
-      class="material-card"
-      wx:for="{{materials}}"
-      wx:key="id"
-      data-id="{{item.id}}"
-      bindtap="onTapMaterial"
-      hover-class="card-tap"
-    >
-      <image
-        class="card-cover"
-        src="{{item.coverUrl}}"
-        mode="aspectFill"
-        wx:if="{{item.coverUrl}}"
+    <!-- Search bar -->
+    <view class="search-bar" wx:if="{{showSearch}}">
+      <input
+        class="search-input"
+        placeholder="搜索标题或来源"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        confirm-type="search"
       />
-      <view class="card-cover-placeholder" wx:else></view>
+    </view>
 
-      <view class="card-body">
-        <text class="card-title">{{item.title}}</text>
-        <view class="card-tags">
-          <text class="tag-source" wx:if="{{item.source}}">{{item.source}}</text>
-          <text class="tag-level tag-{{item.level}}">{{item.level === 'beginner' ? '入门' : item.level === 'intermediate' ? '中级' : '高级'}}</text>
-          <text class="tag-duration">{{item._durationText}}</text>
+    <!-- Filter tags -->
+    <view class="filter-section">
+      <view class="filter-row">
+        <text class="filter-label">口音</text>
+        <view class="filter-tags">
+          <text class="filter-tag {{filters.accent === '' ? 'active' : ''}}" data-type="accent" data-value="" bindtap="onFilterChange">全部</text>
+          <text class="filter-tag {{filters.accent === 'american' ? 'active' : ''}}" data-type="accent" data-value="american" bindtap="onFilterChange">美式</text>
+          <text class="filter-tag {{filters.accent === 'british' ? 'active' : ''}}" data-type="accent" data-value="british" bindtap="onFilterChange">英式</text>
+          <text class="filter-tag {{filters.accent === 'australian' ? 'active' : ''}}" data-type="accent" data-value="australian" bindtap="onFilterChange">澳式</text>
+          <text class="filter-tag {{filters.accent === 'business' ? 'active' : ''}}" data-type="accent" data-value="business" bindtap="onFilterChange">商务</text>
+        </view>
+      </view>
+      <view class="filter-row">
+        <text class="filter-label">难度</text>
+        <view class="filter-tags">
+          <text class="filter-tag {{filters.level === '' ? 'active' : ''}}" data-type="level" data-value="" bindtap="onFilterChange">全部</text>
+          <text class="filter-tag {{filters.level === 'beginner' ? 'active' : ''}}" data-type="level" data-value="beginner" bindtap="onFilterChange">初级</text>
+          <text class="filter-tag {{filters.level === 'intermediate' ? 'active' : ''}}" data-type="level" data-value="intermediate" bindtap="onFilterChange">中级</text>
+          <text class="filter-tag {{filters.level === 'advanced' ? 'active' : ''}}" data-type="level" data-value="advanced" bindtap="onFilterChange">高级</text>
+        </view>
+      </view>
+      <view class="filter-row">
+        <text class="filter-label">时长</text>
+        <view class="filter-tags">
+          <text class="filter-tag {{filters.duration === '' ? 'active' : ''}}" data-type="duration" data-value="" bindtap="onFilterChange">全部</text>
+          <text class="filter-tag {{filters.duration === 'short' ? 'active' : ''}}" data-type="duration" data-value="short" bindtap="onFilterChange">5分钟内</text>
+          <text class="filter-tag {{filters.duration === 'medium' ? 'active' : ''}}" data-type="duration" data-value="medium" bindtap="onFilterChange">5-15分钟</text>
+          <text class="filter-tag {{filters.duration === 'long' ? 'active' : ''}}" data-type="duration" data-value="long" bindtap="onFilterChange">15分钟+</text>
         </view>
       </view>
     </view>
-  </view>
+
+    <!-- Results count -->
+    <view class="results-count" wx:if="{{filtered.length < materials.length}}">
+      <text>筛选结果 {{filtered.length}} / {{materials.length}}</text>
+    </view>
+
+    <!-- Empty -->
+    <view class="empty-state" wx:if="{{filtered.length === 0}}">
+      <text class="empty-text">{{materials.length === 0 ? '暂无素材' : '没有匹配的素材'}}</text>
+    </view>
+
+    <!-- Material list -->
+    <view class="material-list" wx:else>
+      <view
+        class="material-card"
+        wx:for="{{filtered}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        data-favorited="{{item.isFavorited}}"
+        bindtap="onTapMaterial"
+        hover-class="card-tap"
+      >
+        <image
+          class="card-cover"
+          src="{{item.coverUrl}}"
+          mode="aspectFill"
+          wx:if="{{item.coverUrl}}"
+        />
+        <view class="card-cover-placeholder" wx:else></view>
+
+        <view class="card-fav" data-id="{{item.id}}" data-favorited="{{item.isFavorited}}" catchtap="onToggleFavorite">
+          <text class="card-fav-icon {{item.isFavorited ? 'fav-filled' : ''}}">♥</text>
+        </view>
+
+        <view class="card-body">
+          <text class="card-title">{{item.title}}</text>
+          <view class="card-tags">
+            <text class="tag-source" wx:if="{{item.source}}">{{item.source}}</text>
+            <text class="tag-accent" wx:if="{{item.accent && item.accent !== 'american'}}">{{item.accent === 'british' ? '英式' : item.accent === 'australian' ? '澳式' : item.accent === 'business' ? '商务' : item.accent}}</text>
+            <text class="tag-level tag-{{item.level}}">{{item.level === 'beginner' ? '入门' : item.level === 'intermediate' ? '中级' : '高级'}}</text>
+            <text class="tag-duration">{{item._durationText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
 </view>

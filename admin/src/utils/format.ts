@@ -12,6 +12,14 @@ export const formatTimestamp = (ms: number): string => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
+export const ACCENT_LABELS: Record<string, string> = {
+  american: '美式',
+  british: '英式',
+  australian: '澳式',
+  business: '商务',
+  other: '其他',
+}
+
 export const LEVEL_LABELS: Record<string, string> = {
   beginner: '入门',
   intermediate: '中级',

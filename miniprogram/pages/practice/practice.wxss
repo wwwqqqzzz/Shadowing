@@ -1,3 +1,87 @@
+/* ─── Mode modal ──────────────────────────────────────── */
+
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-box {
+  width: 85%;
+  background: #1a1a1a;
+  border-radius: 32rpx;
+  padding: 48rpx 36rpx;
+}
+
+.modal-title {
+  display: block;
+  font-size: 32rpx;
+  color: #ffffff;
+  font-weight: 600;
+  text-align: center;
+}
+
+.modal-subtitle {
+  display: block;
+  font-size: 24rpx;
+  color: #666;
+  text-align: center;
+  margin-top: 8rpx;
+  margin-bottom: 40rpx;
+}
+
+.modal-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.modal-option {
+  background: #2a2a2a;
+  border-radius: 24rpx;
+  padding: 28rpx 32rpx;
+}
+
+.modal-option-tap {
+  background: #3a3a3a;
+}
+
+.modal-option-left {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.modal-option-icon {
+  font-size: 44rpx;
+  flex-shrink: 0;
+}
+
+.modal-option-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.modal-option-name {
+  font-size: 30rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.modal-option-desc {
+  font-size: 24rpx;
+  color: #888;
+  line-height: 1.4;
+}
+
 /* ─── Base ────────────────────────────────────────────── */
 
 page {

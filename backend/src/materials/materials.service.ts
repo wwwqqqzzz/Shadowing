@@ -10,6 +10,7 @@ export interface MaterialWithCount {
   title: string;
   language: string;
   level: string;
+  accent: string;
   coverUrl: string;
   audioUrl: string;
   durationMs: number;
@@ -33,6 +34,8 @@ export class MaterialsService {
       language?: string;
       level?: string;
       status?: string;
+      accent?: string;
+      duration?: string;
     },
   ): Promise<MaterialWithCount[]> {
     const qb = this.materialRepo
@@ -42,6 +45,7 @@ export class MaterialsService {
       .addSelect('m.title', 'title')
       .addSelect('m.language', 'language')
       .addSelect('m.level', 'level')
+      .addSelect('m.accent', 'accent')
       .addSelect('m.coverUrl', 'coverUrl')
       .addSelect('m.audioUrl', 'audioUrl')
       .addSelect('m.durationMs', 'durationMs')
@@ -50,15 +54,19 @@ export class MaterialsService {
       .addSelect('m.source', 'source')
       .addSelect('m.createdAt', 'createdAt')
       .addSelect('COUNT(s.id)', 'sentenceCount')
-      .groupBy('m.id');
+      .addGroupBy('m.id');
 
     if (query?.language) qb.andWhere('m.language = :language', { language: query.language });
     if (query?.level) qb.andWhere('m.level = :level', { level: query.level });
+    if (query?.accent) qb.andWhere('m.accent = :accent', { accent: query.accent });
     if (query?.status) {
       qb.andWhere('m.status = :status', { status: query.status });
     } else {
       qb.andWhere('m.status = :status', { status: 'published' });
     }
+    if (query?.duration === 'short') qb.andWhere('m.durationMs < 300000');
+    if (query?.duration === 'medium') qb.andWhere('m.durationMs BETWEEN 300000 AND 900000');
+    if (query?.duration === 'long') qb.andWhere('m.durationMs >= 900000');
 
     qb.orderBy('m.createdAt', 'DESC');
 
@@ -68,6 +76,7 @@ export class MaterialsService {
       title: row.title,
       language: row.language,
       level: row.level,
+      accent: row.accent,
       coverUrl: row.coverUrl,
       audioUrl: row.audioUrl,
       durationMs: Number(row.durationMs),
@@ -157,6 +166,16 @@ export class MaterialsService {
     material.status = status;
     const saved = await this.materialRepo.save(material);
     return { id: saved.id, status: saved.status };
+  }
+
+  async updateMaterial(id: string, data: { accent?: string; level?: string; status?: string }) {
+    const material = await this.materialRepo.findOne({ where: { id } });
+    if (!material) {
+      throw new NotFoundException('Material not found');
+    }
+    Object.assign(material, data);
+    const saved = await this.materialRepo.save(material);
+    return { id: saved.id, accent: saved.accent, level: saved.level, status: saved.status };
   }
 
   async updateOffset(

@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """Post-process aligned sentences in DB: clean HTML entities, merge short
-sentences (<3s), split long sentences (>=15s), update material durationMs."""
+sentences (<3s), split long sentences (>=15s), update material durationMs.
+
+Usage:
+    python3 scripts/postprocess_alignment.py --material-id <ID>
+"""
+import argparse
 import os
-import sys
 import re
 import html
 
 import psycopg2
 
-MATERIAL_ID = 'adc697bc-f8bc-4c21-a91c-5df04b182889'
-AUDIO_DURATION_MS = 368860
 MIN_DURATION_MS = 3000
 MAX_DURATION_MS = 15000
 
@@ -45,7 +47,11 @@ def clean_text(text):
 
 def delete_all_sentences(conn):
     cur = conn.cursor()
+    cur.execute('DELETE FROM practice_record WHERE "sentenceId" IN '
+                '(SELECT id FROM sentence WHERE "materialId" = %s)', (MATERIAL_ID,))
+    print(f'  Deleted {cur.rowcount} practice records')
     cur.execute('DELETE FROM sentence WHERE "materialId" = %s', (MATERIAL_ID,))
+    print(f'  Deleted {cur.rowcount} sentences')
     cur.close()
 
 
@@ -98,9 +104,102 @@ def split_sentence(sid, order, start, end, text):
     return [(sid, order, start, end, text)]
 
 
+def tighten_boundaries(sentences, audio_duration_ms, lead_ms=150, trail_ms=100):
+    """Tighten sentence boundaries to reduce leading/trailing silence.
+
+    For each sentence:
+    - startTime: push forward by lead_ms, but not past the midpoint of the gap to the previous sentence
+    - endTime: pull back by trail_ms, but not past the midpoint of the gap to the next sentence
+
+    This ensures sentences start at the actual speech, not in the middle of silence.
+    """
+    if not sentences:
+        return sentences
+
+    result = []
+    for i, (sid, order, start, end, text) in enumerate(sentences):
+        new_start = start
+        new_end = end
+
+        # Tighten start: push forward by lead_ms, but respect gap to previous sentence
+        if i == 0:
+            # First sentence: can push forward, but not more than 50% of the gap from 0
+            gap_from_zero = start
+            max_push = min(lead_ms, gap_from_zero // 2)
+            new_start = start + max(0, max_push)
+        else:
+            prev_end = sentences[i - 1][3]
+            gap = start - prev_end
+            if gap > 0:
+                # Push forward, but leave at least half the gap
+                max_push = min(lead_ms, gap // 2)
+                new_start = start + max(0, max_push)
+            elif gap > -500:
+                # Small overlap (<500ms): keep start, but nudge forward slightly
+                new_start = start + 50
+            else:
+                # Large overlap: use previous end as start
+                new_start = prev_end + 50
+
+        # Tighten end: pull back by trail_ms, but respect gap to next sentence
+        if i == len(sentences) - 1:
+            # Last sentence: pull back, but don't go past start
+            new_end = max(new_start + 500, end - trail_ms)
+        else:
+            next_start = sentences[i + 1][2]
+            gap = next_start - end
+            if gap > 0:
+                # Pull back, but leave at least half the gap
+                max_pull = min(trail_ms, gap // 2)
+                new_end = max(new_start + 500, end - max(0, max_pull))
+            elif gap > -500:
+                # Small overlap: pull back slightly
+                new_end = max(new_start + 500, end - 50)
+            else:
+                # Large overlap: end before next start
+                new_end = next_start - 50
+
+        # Ensure minimum duration of 500ms
+        if new_end - new_start < 500:
+            new_end = new_start + 500
+
+        result.append((sid, order, new_start, new_end, text))
+
+    return result
+
+
 def main():
+    parser = argparse.ArgumentParser(description='Post-process aligned sentences')
+    parser.add_argument('--material-id', required=True, help='Material ID to process')
+    parser.add_argument('--duration-ms', type=int, help='Audio duration in ms (auto-detected if omitted)')
+    parser.add_argument('--no-tighten', action='store_true', help='Skip boundary tightening step')
+    args = parser.parse_args()
+
+    global MATERIAL_ID
+    MATERIAL_ID = args.material_id
+
     conn = connect()
     conn.autocommit = False
+
+    # Auto-detect audio duration if not provided
+    audio_duration_ms = args.duration_ms
+    if not audio_duration_ms:
+        cur = conn.cursor()
+        cur.execute('SELECT "durationMs" FROM material WHERE id = %s', (MATERIAL_ID,))
+        row = cur.fetchone()
+        cur.close()
+        if row and row[0]:
+            audio_duration_ms = row[0]
+        else:
+            # Calculate from last sentence end time
+            cur = conn.cursor()
+            cur.execute('SELECT MAX("endTime") FROM sentence WHERE "materialId" = %s', (MATERIAL_ID,))
+            row = cur.fetchone()
+            cur.close()
+            audio_duration_ms = row[0] if row and row[0] else 0
+
+    global AUDIO_DURATION_MS
+    AUDIO_DURATION_MS = audio_duration_ms
 
     try:
         rows = fetch_sentences(conn)
@@ -133,6 +232,11 @@ def main():
             if len(parts) > 1:
                 print(f'  Split #{item[1]} ({item[3] - item[2]}ms)')
             final.extend(parts)
+
+        if not args.no_tighten:
+            before_tighten = len(final)
+            final = tighten_boundaries(final, AUDIO_DURATION_MS)
+            print(f'  Tightened {before_tighten} sentence boundaries')
 
         final = [(sid, order, start, end, clean_text(text))
                  for (sid, order, start, end, text) in final]

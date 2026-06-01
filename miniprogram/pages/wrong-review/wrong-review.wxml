@@ -1,0 +1,86 @@
+<view class="container">
+  <!-- Review state (not finished) -->
+  <block wx:if="{{status !== 'finished'}}">
+    <!-- Progress -->
+    <view class="progress">{{currentIndex + 1}} / {{items.length}}</view>
+
+    <!-- Current sentence -->
+    <view class="sentence-card">
+      <text class="sentence-text">{{items[currentIndex].sentence.text}}</text>
+      <text class="sentence-translation" wx:if="{{items[currentIndex].sentence.translation}}">{{items[currentIndex].sentence.translation}}</text>
+      <text class="sentence-material">{{items[currentIndex].sentence.material.title}}</text>
+    </view>
+
+    <!-- Play controls -->
+    <view class="controls">
+      <view class="play-btn {{status === 'playing' ? 'playing' : ''}}" bindtap="onTogglePlay">
+        <text>{{status === 'playing' ? '⏸' : '▶'}}</text>
+      </view>
+    </view>
+
+    <!-- Recording indicator -->
+    <view class="recording-area" wx:if="{{status === 'recording'}}">
+      <view class="rec-dot"></view>
+      <text class="rec-time">{{elapsed}}s</text>
+    </view>
+
+    <!-- Feedback -->
+    <view class="feedback" wx:if="{{status === 'evaluated' && feedback}}">
+      <view class="score {{feedback.score < 60 ? 'score-low' : feedback.score < 80 ? 'score-mid' : 'score-ok'}}">
+        {{feedback.score}}
+      </view>
+      <text class="one-move" wx:if="{{feedback.score >= 80 && items[currentIndex].oneMorePass}}">🎉 连续2次达标，已移出错题本</text>
+      <text class="one-move" wx:elif="{{feedback.score >= 80}}">👍 再过1次移出错题本</text>
+      <view class="missing-words" wx:if="{{feedback.errorWords}}">
+        <text class="missing-label">缺失词</text>
+        <view class="word-tags">
+          <text class="word-tag" wx:for="{{feedback.errorWords.split(' ')}}" wx:key="*this" wx:for-item="word">{{word}}</text>
+        </view>
+      </view>
+      <view class="text-compare">
+        <view class="compare-row">
+          <text class="compare-label">你说的</text>
+          <text class="compare-text">{{feedback.recognizedText}}</text>
+        </view>
+        <view class="compare-row">
+          <text class="compare-label">原句</text>
+          <text class="compare-text">{{items[currentIndex].sentence.text}}</text>
+        </view>
+      </view>
+      <view class="feedback-actions">
+        <view class="retry-btn" bindtap="onRetry" hover-class="btn-tap"><text>再练一次</text></view>
+        <view class="next-btn" bindtap="onNext" hover-class="btn-tap"><text>下一题 →</text></view>
+      </view>
+    </view>
+  </block>
+
+  <!-- Finished state -->
+  <view class="finished" wx:if="{{status === 'finished'}}">
+    <text class="finished-emoji">{{removed > 0 ? '🎉' : '💪'}}</text>
+    <text class="finished-title">{{removed > 0 ? '太棒了！' : '复习完成'}}</text>
+
+    <view class="summary-cards">
+      <view class="summary-card">
+        <text class="summary-num">{{sessionResults.length}}</text>
+        <text class="summary-label">练习</text>
+      </view>
+      <view class="summary-card">
+        <text class="summary-num {{avgScore >= 80 ? 'ok' : avgScore >= 60 ? 'mid' : 'low'}}">{{avgScore}}</text>
+        <text class="summary-label">均分</text>
+      </view>
+      <view class="summary-card" wx:if="{{removed > 0}}">
+        <text class="summary-num ok">{{removed}}</text>
+        <text class="summary-label">移出</text>
+      </view>
+    </view>
+
+    <view class="finished-change" wx:if="{{removed > 0}}">
+      <text class="change-detail">错题库 {{startTotal}} → {{endCount}} 句</text>
+    </view>
+
+    <view class="finished-actions">
+      <view class="retry-btn" bindtap="onReviewAgain" hover-class="btn-tap"><text>再练一遍</text></view>
+      <view class="back-btn" bindtap="onBackToBook" hover-class="btn-tap"><text>返回错题本</text></view>
+    </view>
+  </view>
+</view>

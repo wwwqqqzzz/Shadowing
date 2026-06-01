@@ -1,5 +1,6 @@
 const { getMockMaterial } = require('../../mock/data')
 const { getMaterial, getSentences, createPracticeRecord } = require('../../utils/api')
+const { isLoggedIn, login } = require('../../utils/auth')
 
 const WAIT_MS = 2500
 const SPEEDS = [0.5, 0.8, 1, 1.25, 1.5, 2]
@@ -17,7 +18,14 @@ Page({
     recordPath: null,
     playingBack: false,
     feedback: null,
-    showFeedback: false
+    showFeedback: false,
+    showModeModal: false,
+    practiceMode: 'free',
+    modeModes: [
+      { key: 'free', icon: '🎧', name: '自由模式', desc: '播完自动进下一句，不录音，适合通勤听' },
+      { key: 'auto', icon: '🎙', name: '自动录音', desc: '播完自动录音评分，适合认真练习' },
+      { key: 'manual', icon: '✋', name: '手动模式', desc: '自己控制录音和继续，适合反复练某句' },
+    ]
   },
 
   async onLoad(options) {
@@ -28,6 +36,12 @@ Page({
     this._sentenceStartTime = null
     this._pausedAt = null
     this._audioCacheKey = Date.now()
+    this._autoNextTimer = null
+
+    const storedMode = wx.getStorageSync('practiceMode')
+    if (storedMode) {
+      this.data.practiceMode = storedMode
+    }
 
     this.recorder = wx.getRecorderManager()
     this.recorder.onStart(() => {
@@ -42,7 +56,23 @@ Page({
       this.setData({ recording: false })
     })
 
+    if (!isLoggedIn()) {
+      try {
+        await login()
+      } catch (err) {
+        wx.showToast({ title: '登录失败，训练记录将不会保存', icon: 'none', duration: 3000 })
+      }
+    }
+
+    const mode = wx.getStorageSync('practiceMode')
+    if (!mode) {
+      this.setData({ showModeModal: true })
+    } else {
+      this.setData({ practiceMode: mode })
+    }
+
     const materialId = options.materialId
+    const startOrder = parseInt(options.startOrder || '1', 10)
 
     if (!materialId) {
       wx.showToast({ title: '素材不存在', icon: 'error' })
@@ -57,13 +87,16 @@ Page({
       ])
       console.log('[onLoad] material.audioUrl=', material.audioUrl, 'material.audioOffsetMs=', material.audioOffsetMs)
       console.log('[onLoad] sentences count=', sentences.length, 'first audioUrl=', sentences[0] && sentences[0].audioUrl, 'first text=', sentences[0] && sentences[0].text && sentences[0].text.substring(0, 30))
-      this.setData({ material, sentences })
+      const startIndex = Math.max(0, sentences.findIndex(s => s.order >= startOrder))
+      this.setData({ material, sentences, currentIndex: startIndex > 0 ? startIndex : 0 })
     } catch (err) {
       console.error('拉取失败，降级到本地 mock', err)
       const fallback = getMockMaterial('mock-001')
+      const fallbackStart = Math.max(0, fallback.sentences.findIndex(s => s.order >= startOrder))
       this.setData({
         material: { audioUrl: fallback.audioUrl, title: fallback.title, audioOffsetMs: fallback.audioOffsetMs || 0 },
         sentences: fallback.sentences,
+        currentIndex: fallbackStart > 0 ? fallbackStart : 0,
       })
     }
   },
@@ -72,6 +105,7 @@ Page({
     this._clearWait()
     this._clearSentenceTimer()
     this._clearTimeUpdateInterval()
+    if (this._autoNextTimer) { clearTimeout(this._autoNextTimer); this._autoNextTimer = null }
     this.recorder.stop()
     this._destroyAudio()
     this._destroyPlayback()
@@ -100,6 +134,8 @@ Page({
 
   _onSentenceEnd() {
     const sentence = this.data.sentences[this.data.currentIndex]
+    const mode = this.data.practiceMode
+
     if (sentence) {
       createPracticeRecord({
         sentenceId: sentence.id,
@@ -122,10 +158,29 @@ Page({
       return
     }
 
-    this.setData({ status: 'waiting' })
-    this._waitTimer = setTimeout(() => {
+    if (mode === 'free') {
       this._goNext()
-    }, WAIT_MS)
+      return
+    }
+
+    if (mode === 'auto') {
+      this.setData({ status: 'waiting' })
+      this._clearWait()
+      this._waitTimer = setTimeout(() => {
+        this.onToggleRecord()
+        const sentenceLen = sentence ? sentence.endTime - sentence.startTime : 8000
+        const recordDuration = Math.min(Math.max(sentenceLen + 2000, 8000), 30000)
+        this._autoNextTimer = setTimeout(() => {
+          if (this.data.recording) {
+            this.recorder.stop()
+          }
+          setTimeout(() => { this._goNext() }, 1500)
+        }, recordDuration + 500)
+      }, 800)
+      return
+    }
+
+    this.setData({ status: 'waiting' })
   },
 
   // ─── Play sentence at index ────────────────────────────
@@ -265,6 +320,7 @@ Page({
 
   _goNext() {
     this._clearWait()
+    if (this._autoNextTimer) { clearTimeout(this._autoNextTimer); this._autoNextTimer = null }
     this.setData({ recordPath: null, feedback: null, showFeedback: false })
     this._destroyPlayback()
     const next = this.data.currentIndex + 1
@@ -411,6 +467,12 @@ Page({
     })
     this._playbackCtx = ac
     ac.play()
+  },
+
+  onSelectMode(e) {
+    const mode = e.currentTarget.dataset.mode
+    wx.setStorageSync('practiceMode', mode)
+    this.setData({ showModeModal: false, practiceMode: mode })
   },
 
   _destroyPlayback() {

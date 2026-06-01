@@ -9,7 +9,7 @@
   </view>
 
   <view wx:else>
-    <!-- Area 1: Stats cards -->
+    <!-- Area 1: Stats cards (3 columns) -->
     <view class="stats-row">
       <view class="stats-card">
         <text class="stats-number">{{totalSentences}}</text>
@@ -19,9 +19,113 @@
         <text class="stats-number">{{totalDurationText}}</text>
         <text class="stats-label">分钟</text>
       </view>
+      <view class="stats-card streak-card" bindtap="onToggleCalendar" hover-class="item-tap">
+        <text class="stats-number">🔥 {{currentStreak}}</text>
+        <text class="stats-label">连续天数</text>
+        <text class="streak-hint" wx:if="{{!todayDone}}">今天还没练</text>
+      </view>
     </view>
 
-    <!-- Area 2: Section title -->
+    <!-- Streak detail -->
+    <view class="streak-detail">
+      最长连续 {{longestStreak}} 天  ·  累计打卡 {{totalDays}} 天
+    </view>
+
+    <!-- Calendar (3-level: year → month → day) -->
+    <view class="calendar-wrap" wx:if="{{showCalendar}}" style="transform-origin: {{calOriginX}} {{calOriginY}};">
+
+      <!-- Header with back button -->
+      <view class="cal-header">
+        <view class="cal-back" wx:if="{{calendarLevel !== 'year'}}" bindtap="onCalendarBack" hover-class="item-tap">
+          <text class="cal-back-icon">‹</text>
+          <text class="cal-back-text">返回</text>
+        </view>
+        <view class="month-nav-btn" wx:if="{{calendarLevel === 'year'}}" bindtap="onPrevYear" hover-class="item-tap">‹</view>
+        <text class="cal-title">{{calendarLevel === 'year' ? calendarYear + '年' : calendarLevel === 'day' ? selectedDate : ''}}</text>
+        <view class="month-nav-btn" wx:if="{{calendarLevel === 'year'}}" bindtap="onNextYear" hover-class="item-tap">›</view>
+        <view class="cal-headerSpacer" wx:if="{{calendarLevel !== 'year'}}"></view>
+      </view>
+
+      <!-- Level 1: Year View -->
+      <view class="cal-year" wx:if="{{calendarLevel === 'year'}}" style="animation: calZoomIn 0.5s cubic-bezier(0.4,0,0.2,1) both;">
+        <view class="year-grid">
+          <view
+            wx:for="{{yearGrid}}"
+            wx:key="month"
+            class="year-month-cell {{item.isCurrent ? 'current' : ''}} {{item.count > 0 ? 'has-data' : ''}}"
+            data-month="{{item.month}}"
+            bindtap="onYearMonthTap"
+            hover-class="item-tap"
+          >
+            <text class="ym-label">{{item.label}}</text>
+            <text class="ym-count" wx:if="{{item.count > 0}}">{{item.count}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- Level 2: Month View -->
+      <view class="cal-month" wx:if="{{calendarLevel === 'month'}}" style="animation: calZoomIn 0.5s cubic-bezier(0.4,0,0.2,1) both;">
+        <view class="month-nav">
+          <view class="month-nav-btn" bindtap="onPrevMonth" hover-class="item-tap">‹</view>
+          <text class="month-nav-label">{{monthLabel}}</text>
+          <view class="month-nav-btn" bindtap="onNextMonth" hover-class="item-tap">›</view>
+        </view>
+        <view class="month-weekdays">
+          <text wx:for="{{weekdays}}" wx:key="*this" class="mw-cell">{{item}}</text>
+        </view>
+        <view class="month-grid">
+          <view
+            wx:for="{{monthCells}}"
+            wx:key="dateStr"
+            class="day-cell {{item.empty ? 'empty' : ''}} {{item.done ? 'done' : ''}} {{item.isToday ? 'today' : ''}} {{item.isFuture ? 'future' : ''}}"
+            data-date="{{item.dateStr}}"
+            bindtap="onMonthDayTap"
+          >
+            <text wx:if="{{!item.empty}}">{{item.day}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- Level 3: Day View -->
+      <view class="cal-day" wx:if="{{calendarLevel === 'day'}}" style="animation: calZoomIn 0.5s cubic-bezier(0.4,0,0.2,1) both;">
+        <view class="day-header">
+          <text class="day-date">{{selectedDate}}</text>
+          <text class="day-count" wx:if="{{daySummary}}">练习 {{daySummary.count}} 句</text>
+        </view>
+        <view class="day-empty" wx:if="{{dayRecords.length === 0}}">
+          <text class="day-empty-text">这天没有练习记录</text>
+        </view>
+        <view class="day-records" wx:if="{{dayRecords.length > 0}}">
+          <view class="day-record" wx:for="{{dayRecords}}" wx:key="id">
+            <view class="day-record-text">{{item.sentence.text}}</view>
+            <view class="day-record-meta">
+              <text class="day-record-dur">{{item.durationText}}</text>
+              <text class="day-record-score" wx:if="{{item.score !== null && item.score !== undefined}}">{{item.score}}分</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- Wrong book entry -->
+    <view class="settings-row wrong-book-row" bindtap="onTapWrongBook" hover-class="item-tap">
+      <view class="wrong-book-left">
+        <text class="settings-label">错题本</text>
+        <text class="wrong-hint" wx:if="{{wrongDaysSince >= 3}}">{{wrongDaysSince >= 7 ? '🔥' : '⏰'}} 已 {{wrongDaysSince}} 天未复习</text>
+      </view>
+      <view class="wrong-book-right">
+        <text class="wrong-badge" wx:if="{{wrongCount > 0}}">{{wrongCount}}</text>
+        <text class="settings-arrow">›</text>
+      </view>
+    </view>
+
+    <!-- Area 2: Settings entry -->
+    <view class="settings-row" bindtap="onTapSettings" hover-class="item-tap">
+      <text class="settings-label">设置</text>
+      <text class="settings-arrow">›</text>
+    </view>
+
+    <!-- Area 3: Section title -->
     <view class="section-title">最近练习</view>
 
     <!-- Area 3: Recent records -->

@@ -56,6 +56,9 @@ Shadowing/
 - 后端 ORM: TypeORM + PostgreSQL
 - 鉴权: passport-jwt
 - 后台: React 19 + Ant Design 6 + Vite 8 + TypeScript 6.0
+- ASR 对齐: OpenAI Whisper `base` model (CPU)
+- 素材下载: yt-dlp (MP3 + 手写字幕)
+- 两条对齐管道: VTT→Whisper 对齐 (有手写字幕) / Whisper-only (无字幕/自动字幕)
 
 ## ANTI-PATTERNS（该项目内禁止）
 
@@ -69,6 +72,10 @@ Shadowing/
 | 重复代码 | scripts/import-material.ts 内联了 vtt-parser 完整实现 | `scripts/import-material.ts` |
 | ⚠️ 微信 onTimeUpdate 不可靠 | 不能用 `ac.onTimeUpdate()` 做播放边界检测——iOS 远程音频可能不触发或 currentTime 返回错误值。必须用 `setInterval(100ms)` 轮询 | `practice.js` seek 模式 |
 | ⚠️ Timer padding 是绝对值陷阱 | 后备 timer 不要加超过 200ms 的固定 padding。1s 句子 + 3s padding = 300% 误差，用户能听到下句内容 | `practice.js _startSentenceTimer` |
+| ⚠️ YouTube 自动字幕不能用于对齐 | auto-generated subs (en-orig) 是逐词滚动字幕（卡拉OK式），不是按句分段。用 align_sentences.py 对齐会产生负时间戳和 100s+ 片段。必须走 Whisper-only 管道（无 VTT） | `scripts/align_sentences.py` |
+| ⚠️ 新素材默认 draft 状态 | INSERT INTO material 不设 status 则默认 draft，前端只显示 published。插入后必须 `UPDATE material SET status = 'published'` | DB material table |
+| ⚠️ Proxy 环境变量 | Mac 全局代理 127.0.0.1:7897，curl 需手动设 `http_proxy`/`https_proxy`，yt-dlp 自动走系统代理 | 所有网络请求 |
+| ⚠️ 句子边界必须 tighten | Whisper/VTT 分段边界包含句前句后静音，不做 tighten 会导致播放时开头空白或读到下一句 | `postprocess_alignment.py tighten_boundaries()` |
 
 ## UNIQUE STYLES
 

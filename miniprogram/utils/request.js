@@ -1,4 +1,5 @@
 const BASE_URL = 'http://localhost:3000/api'
+const { login } = require('./auth')
 
 const request = ({ url, method = 'GET', data = {} }) => {
   return new Promise((resolve, reject) => {
@@ -15,8 +16,12 @@ const request = ({ url, method = 'GET', data = {} }) => {
         if (res.statusCode === 401) {
           wx.removeStorageSync('token')
           wx.removeStorageSync('user')
-          wx.navigateTo({ url: '/pages/login/login' })
-          return reject(new Error('Unauthorized'))
+          login().then(() => {
+            resolve(request({ url, method, data }))
+          }).catch(() => {
+            reject(new Error('登录失效，请重启小程序'))
+          })
+          return
         }
         resolve(res.data)
       },

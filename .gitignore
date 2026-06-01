@@ -45,6 +45,9 @@ miniprogram/project.private.config.json
 # Temp uploaded media
 tmp/
 
+# Persistent audio uploads (not in git)
+backend/uploads/
+
 # Large media files (only keep mock/audio/)
 *.mp3
 *.wav

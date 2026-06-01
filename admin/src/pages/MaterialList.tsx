@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Popconfirm, Space, Spin, Table, Tag, Typography, message } from 'antd'
+import { Button, Form, Modal, Popconfirm, Select, Space, Spin, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import type { Material } from '../api/materials'
-import { deleteMaterial, getMaterials, updateStatus } from '../api/materials'
+import { deleteMaterial, getMaterials, updateMaterial, updateStatus } from '../api/materials'
 import {
+  ACCENT_LABELS,
   formatDuration,
   LEVEL_LABELS,
   LEVEL_COLORS,
@@ -18,6 +19,10 @@ const MaterialList: React.FC = () => {
   const navigate = useNavigate()
   const [materials, setMaterials] = useState<Material[]>([])
   const [loading, setLoading] = useState(true)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editForm] = Form.useForm()
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
   const fetchMaterials = async () => {
     try {
@@ -46,6 +51,32 @@ const MaterialList: React.FC = () => {
     }
   }
 
+  const handleEdit = (record: Material) => {
+    setEditingId(record.id)
+    editForm.setFieldsValue({
+      accent: record.accent || 'american',
+      level: record.level,
+      status: record.status,
+    })
+    setEditOpen(true)
+  }
+
+  const handleEditSave = async () => {
+    if (!editingId) return
+    try {
+      const values = await editForm.validateFields()
+      setSaving(true)
+      await updateMaterial(editingId, values)
+      message.success('已更新')
+      setEditOpen(false)
+      await fetchMaterials()
+    } catch {
+      if (saving) message.error('更新失败')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleDelete = async (id: string) => {
     try {
       await deleteMaterial(id)
@@ -67,6 +98,14 @@ const MaterialList: React.FC = () => {
       dataIndex: 'source',
       key: 'source',
       render: (source: string) => <Tag>{source}</Tag>,
+    },
+    {
+      title: '口音',
+      dataIndex: 'accent',
+      key: 'accent',
+      render: (accent: string) => (
+        <Tag>{ACCENT_LABELS[accent] ?? accent}</Tag>
+      ),
     },
     {
       title: '难度',
@@ -100,6 +139,13 @@ const MaterialList: React.FC = () => {
       key: 'actions',
       render: (_: unknown, record: Material) => (
         <Space>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => handleEdit(record)}
+          >
+            编辑
+          </Button>
           {record.status === 'draft' && (
             <Button
               type="link"
@@ -141,20 +187,43 @@ const MaterialList: React.FC = () => {
   ]
 
   return (
-    <Spin spinning={loading}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <Title level={3} style={{ margin: 0 }}>素材管理</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/import')}>
-          导入新素材
-        </Button>
-      </div>
-      <Table
-        rowKey="id"
-        columns={columns}
-        dataSource={materials}
-        pagination={{ pageSize: 20 }}
-      />
-    </Spin>
+    <>
+      <Spin spinning={loading}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <Title level={3} style={{ margin: 0 }}>素材管理</Title>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/import')}>
+            导入新素材
+          </Button>
+        </div>
+        <Table
+          rowKey="id"
+          columns={columns}
+          dataSource={materials}
+          pagination={{ pageSize: 20 }}
+        />
+      </Spin>
+      <Modal
+        title="编辑素材"
+        open={editOpen}
+        onOk={() => void handleEditSave()}
+        onCancel={() => setEditOpen(false)}
+        confirmLoading={saving}
+        okText="保存"
+        cancelText="取消"
+      >
+        <Form form={editForm} layout="vertical">
+          <Form.Item label="口音" name="accent" rules={[{ required: true, message: '请选择口音' }]}>
+            <Select options={Object.entries(ACCENT_LABELS).map(([value, label]) => ({ value, label }))} />
+          </Form.Item>
+          <Form.Item label="难度" name="level" rules={[{ required: true, message: '请选择难度' }]}>
+            <Select options={Object.entries(LEVEL_LABELS).map(([value, label]) => ({ value, label }))} />
+          </Form.Item>
+          <Form.Item label="状态" name="status" rules={[{ required: true, message: '请选择状态' }]}>
+            <Select options={Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label }))} />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
   )
 }
 

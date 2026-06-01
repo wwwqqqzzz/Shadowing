@@ -8,6 +8,8 @@ import { MaterialsModule } from './materials/materials.module';
 import { SentencesModule } from './sentences/sentences.module';
 import { PracticeRecordsModule } from './practice-records/practice-records.module';
 import { AsrModule } from './asr/asr.module';
+import { AppConfigModule } from './app-config/app-config.module';
+import { FavoritesModule } from './favorites/favorites.module';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { AsrModule } from './asr/asr.module';
     SentencesModule,
     PracticeRecordsModule,
     AsrModule,
+    AppConfigModule,
+    FavoritesModule,
   ],
 })
 export class AppModule {}

@@ -27,6 +27,30 @@ export class PracticeRecordsController {
     });
   }
 
+  @Get('my/last-progress')
+  @UseGuards(AuthGuard('jwt'))
+  async getLastProgress(@Req() req) {
+    return this.recordsService.getLastProgress(req.user.id);
+  }
+
+  @Get('my/streak')
+  @UseGuards(AuthGuard('jwt'))
+  async getStreak(@Req() req) {
+    return this.recordsService.getStreakStats(req.user.id);
+  }
+
+  @Get('my/wrong/count')
+  @UseGuards(AuthGuard('jwt'))
+  async getWrongCount(@Req() req) {
+    return this.recordsService.getWrongCount(req.user.id);
+  }
+
+  @Get('my/wrong')
+  @UseGuards(AuthGuard('jwt'))
+  async getWrongSentences(@Req() req) {
+    return this.recordsService.getWrongSentences(req.user.id);
+  }
+
   @Get('my/stats')
   @UseGuards(AuthGuard('jwt'))
   async getMyStats(@Req() req) {

@@ -1,25 +1,32 @@
 {
   "pages": [
+    "pages/home/home",
     "pages/materials/materials",
     "pages/practice/practice",
-    "pages/home/home",
-    "pages/profile/profile"
+    "pages/profile/profile",
+    "pages/wrong-book/wrong-book",
+    "pages/wrong-review/wrong-review",
+    "pages/settings/settings"
   ],
   "window": {
     "navigationBarTitleText": "Shadowing",
-    "navigationBarBackgroundColor": "#ffffff",
-    "navigationBarTextStyle": "black",
-    "backgroundColor": "#f5f5f5"
+    "navigationBarBackgroundColor": "#0f0f0f",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0f0f0f"
   },
   "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#333333",
-    "backgroundColor": "#ffffff",
+    "color": "#888888",
+    "selectedColor": "#a8e6cf",
+    "backgroundColor": "#0f0f0f",
     "borderStyle": "black",
     "list": [
       {
+        "pagePath": "pages/home/home",
+        "text": "训练"
+      },
+      {
         "pagePath": "pages/materials/materials",
-        "text": "素材"
+        "text": "素材库"
       },
       {
         "pagePath": "pages/profile/profile",

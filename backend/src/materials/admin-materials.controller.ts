@@ -92,6 +92,14 @@ export class AdminMaterialsController {
     return this.materialsService.deleteMaterial(id);
   }
 
+  @Patch('sentences/:id')
+  async updateSentence(
+    @Param('id') id: string,
+    @Body() data: { order?: number; startTime?: number; endTime?: number; text?: string; audioUrl?: string },
+  ) {
+    return this.materialsService.updateSentence(id, data);
+  }
+
   @Patch(':id/offset')
   async updateOffset(
     @Param('id') id: string,
@@ -100,11 +108,11 @@ export class AdminMaterialsController {
     return this.materialsService.updateOffset(id, audioOffsetMs);
   }
 
-  @Patch('sentences/:id')
-  async updateSentence(
+  @Patch(':id')
+  async updateMaterial(
     @Param('id') id: string,
-    @Body() data: { order?: number; startTime?: number; endTime?: number; text?: string; audioUrl?: string },
+    @Body() body: { accent?: string; level?: string; status?: string },
   ) {
-    return this.materialsService.updateSentence(id, data);
+    return this.materialsService.updateMaterial(id, body);
   }
 }

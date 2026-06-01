@@ -1,4 +1,30 @@
 <view class="container">
+  <!-- Mode selection modal -->
+  <view class="modal-mask" wx:if="{{showModeModal}}">
+    <view class="modal-box">
+      <text class="modal-title">选择你的跟读方式</text>
+      <text class="modal-subtitle">可在「我的」→「设置」中修改</text>
+      <view class="modal-options">
+        <view
+          wx:for="{{modeModes}}"
+          wx:key="key"
+          class="modal-option"
+          data-mode="{{item.key}}"
+          bindtap="onSelectMode"
+          hover-class="modal-option-tap"
+        >
+          <view class="modal-option-left">
+            <text class="modal-option-icon">{{item.icon}}</text>
+            <view class="modal-option-info">
+              <text class="modal-option-name">{{item.name}}</text>
+              <text class="modal-option-desc">{{item.desc}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <!-- Top bar: title + progress -->
   <view class="top-bar">
     <text class="title-text">{{material.title}}</text>

@@ -1,4 +1,6 @@
 {
-  "navigationBarTitleText": "Shadowing",
+  "navigationBarTitleText": "训练",
+  "navigationBarBackgroundColor": "#0f0f0f",
+  "navigationBarTextStyle": "white",
   "usingComponents": {}
 }

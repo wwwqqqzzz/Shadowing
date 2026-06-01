@@ -1,0 +1,52 @@
+<view class="container">
+  <view class="loading-area" wx:if="{{loading}}">
+    <view class="wait-dots">
+      <view class="wait-dot"></view>
+      <view class="wait-dot"></view>
+      <view class="wait-dot"></view>
+    </view>
+  </view>
+
+  <view wx:elif="{{error}}">
+    <view class="empty-state">
+      <text class="empty-text">加载失败，请重试</text>
+      <view class="empty-btn" bindtap="onRetry">
+        <text>重试</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:elif="{{items.length === 0}}">
+    <view class="empty-state">
+      <text class="empty-text">没有错题，继续保持 👍</text>
+    </view>
+  </view>
+
+  <view wx:else>
+    <view class="header">
+      <text class="total">共 {{total}} 句</text>
+      <view class="start-btn" bindtap="onStartReview" hover-class="btn-tap">
+        <text>开始复习</text>
+      </view>
+    </view>
+
+    <view class="item-list">
+      <view class="item" wx:for="{{items}}" wx:key="sentenceId"
+            data-index="{{index}}" bindtap="onTapItem" hover-class="item-tap">
+        <view class="item-top">
+          <text class="item-text">{{item.sentence.text.length > 50 ? item.sentence.text.substring(0, 50) + '...' : item.sentence.text}}</text>
+          <text class="item-priority">{{item.priority > 70 ? '🔴' : item.priority >= 40 ? '🟡' : '🟢'}}</text>
+        </view>
+        <view class="item-meta">
+          <text class="meta-score {{item.latestScore < 60 ? 'score-low' : item.latestScore < 80 ? 'score-mid' : 'score-ok'}}">{{item.latestScore}}分</text>
+          <text class="meta-sep">·</text>
+          <text class="meta-text almost" wx:if="{{item.oneMorePass}}">再过1次移出</text>
+          <text class="meta-text" wx:else>练错 {{item.errorCount}} 次</text>
+          <text class="meta-sep">·</text>
+          <text class="meta-text">{{item.daysSinceLastReview}} 天前</text>
+        </view>
+        <text class="item-material">{{item.sentence.material.title}}</text>
+      </view>
+    </view>
+  </view>
+</view>

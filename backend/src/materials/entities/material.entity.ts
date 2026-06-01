@@ -21,6 +21,9 @@ export class Material {
   @Column()
   level: string;
 
+  @Column({ default: 'american' })
+  accent: string;
+
   @Column({ nullable: true })
   coverUrl: string;
 

@@ -1,0 +1,76 @@
+page {
+  background: #0f0f0f;
+}
+
+.container {
+  min-height: 100vh;
+  background: #0f0f0f;
+}
+
+.section-title {
+  font-size: 26rpx;
+  color: #666;
+  padding: 32rpx 32rpx 20rpx;
+}
+
+.mode-list {
+  padding: 0 32rpx;
+}
+
+.mode-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1a1a1a;
+  border-radius: 24rpx;
+  padding: 28rpx 32rpx;
+  margin-bottom: 20rpx;
+  border: 2rpx solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.mode-card.active {
+  border-color: #a8e6cf;
+}
+
+.mode-card-tap {
+  opacity: 0.7;
+}
+
+.mode-left {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.mode-icon {
+  font-size: 40rpx;
+  flex-shrink: 0;
+}
+
+.mode-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.mode-name {
+  font-size: 30rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.mode-desc {
+  font-size: 24rpx;
+  color: #888;
+  line-height: 1.4;
+}
+
+.mode-check {
+  font-size: 32rpx;
+  color: #a8e6cf;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}

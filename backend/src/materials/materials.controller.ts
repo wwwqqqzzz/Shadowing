@@ -10,8 +10,10 @@ export class MaterialsController {
     @Query('language') language?: string,
     @Query('level') level?: string,
     @Query('status') status?: string,
+    @Query('accent') accent?: string,
+    @Query('duration') duration?: string,
   ) {
-    return this.materialsService.findAll({ language, level, status });
+    return this.materialsService.findAll({ language, level, status, accent, duration });
   }
 
   @Get(':id')
