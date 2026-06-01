@@ -20,4 +20,22 @@
       <text class="mode-check" wx:if="{{item.key === currentMode}}">✓</text>
     </view>
   </view>
+
+  <view class="section-title">播放设置</view>
+
+  <view class="setting-row">
+    <view class="setting-left">
+      <text class="setting-label">跟读等待时长</text>
+      <text class="setting-hint">自由模式播完后等待时间</text>
+    </view>
+    <picker
+      mode="selector"
+      range="{{waitOptions}}"
+      range-key="label"
+      value="{{waitIndex}}"
+      bindchange="onChangeWait"
+    >
+      <text class="setting-value">{{waitLabel}} ›</text>
+    </picker>
+  </view>
 </view>

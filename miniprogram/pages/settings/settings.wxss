@@ -74,3 +74,37 @@ page {
   flex-shrink: 0;
   margin-left: 16rpx;
 }
+
+/* ─── Setting row ─────────────────────────────────────── */
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1a1a1a;
+  border-radius: 24rpx;
+  padding: 28rpx 32rpx;
+  margin: 0 32rpx 20rpx;
+}
+
+.setting-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.setting-label {
+  font-size: 30rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.setting-hint {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.setting-value {
+  font-size: 28rpx;
+  color: #a8e6cf;
+}

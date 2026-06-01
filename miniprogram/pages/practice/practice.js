@@ -3,7 +3,7 @@ const { getMaterial, getSentences, createPracticeRecord, saveProgress } = requir
 const { isLoggedIn, login } = require('../../utils/auth')
 const { formatDuration } = require('../../utils/format')
 
-const WAIT_MS = 2500
+const DEFAULT_WAIT_MS = 2500
 const SPEEDS = [0.5, 0.8, 1, 1.25, 1.5, 2]
 
 Page({
@@ -26,6 +26,7 @@ Page({
     practiceStartTime: 0,
     sessionScores: [],
     finishedData: null,
+    waitMs: DEFAULT_WAIT_MS,
     modeModes: [
       { key: 'free', icon: '🎧', name: '自由模式', desc: '播完自动进下一句，不录音，适合通勤听' },
       { key: 'auto', icon: '🎙', name: '自动录音', desc: '播完自动录音评分，适合认真练习' },
@@ -47,6 +48,11 @@ Page({
     const storedMode = wx.getStorageSync('practiceMode')
     if (storedMode) {
       this.data.practiceMode = storedMode
+    }
+
+    const storedWait = wx.getStorageSync('waitMs')
+    if (storedWait) {
+      this.data.waitMs = storedWait
     }
 
     this.recorder = wx.getRecorderManager()
@@ -194,7 +200,8 @@ Page({
     }
 
     if (mode === 'free') {
-      this._goNext()
+      this._clearWait()
+      this._waitTimer = setTimeout(() => { this._goNext() }, this.data.waitMs)
       return
     }
 
