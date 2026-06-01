@@ -5,9 +5,10 @@ import { AdminMaterialsController } from './admin-materials.controller';
 import { MaterialsService } from './materials.service';
 import { Material } from './entities/material.entity';
 import { Sentence } from '../sentences/entities/sentence.entity';
+import { ProgressModule } from '../progress/progress.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Material, Sentence])],
+  imports: [TypeOrmModule.forFeature([Material, Sentence]), ProgressModule],
   controllers: [MaterialsController, AdminMaterialsController],
   providers: [MaterialsService],
 })

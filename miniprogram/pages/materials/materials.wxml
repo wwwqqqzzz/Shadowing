@@ -103,6 +103,10 @@
             <text class="tag-accent" wx:if="{{item.accent && item.accent !== 'american'}}">{{item.accent === 'british' ? '英式' : item.accent === 'australian' ? '澳式' : item.accent === 'business' ? '商务' : item.accent}}</text>
             <text class="tag-level tag-{{item.level}}">{{item.level === 'beginner' ? '入门' : item.level === 'intermediate' ? '中级' : '高级'}}</text>
             <text class="tag-duration">{{item._durationText}}</text>
+            <text class="progress-text" wx:if="{{item._progressText}}">{{item._progressText}}</text>
+          </view>
+          <view class="progress-bar-wrap" wx:if="{{item._progressPercent > 0 && item._progressPercent < 95}}">
+            <view class="progress-bar-fill" style="width: {{item._progressPercent}}%"></view>
           </view>
         </view>
       </view>

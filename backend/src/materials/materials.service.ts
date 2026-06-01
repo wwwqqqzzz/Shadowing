@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Material } from './entities/material.entity';
 import { Sentence } from '../sentences/entities/sentence.entity';
+import { ProgressService } from '../progress/progress.service';
 import { parseVtt } from './vtt-parser';
 
 export interface MaterialWithCount {
@@ -18,6 +19,7 @@ export interface MaterialWithCount {
   source: string;
   createdAt: Date;
   sentenceCount: number;
+  progress?: { sentenceOrder: number; totalSentences: number; percent: number } | null;
 }
 
 @Injectable()
@@ -27,6 +29,7 @@ export class MaterialsService {
     private readonly materialRepo: Repository<Material>,
     @InjectRepository(Sentence)
     private readonly sentenceRepo: Repository<Sentence>,
+    private readonly progressService: ProgressService,
   ) {}
 
   async findAll(
@@ -37,6 +40,7 @@ export class MaterialsService {
       accent?: string;
       duration?: string;
     },
+    userId?: string | null,
   ): Promise<MaterialWithCount[]> {
     const qb = this.materialRepo
       .createQueryBuilder('m')
@@ -71,7 +75,7 @@ export class MaterialsService {
     qb.orderBy('m.createdAt', 'DESC');
 
     const rawRows = await qb.getRawMany();
-    return rawRows.map((row) => ({
+    const results = rawRows.map((row) => ({
       id: row.id,
       title: row.title,
       language: row.language,
@@ -86,6 +90,18 @@ export class MaterialsService {
       createdAt: row.createdAt,
       sentenceCount: Number(row.sentenceCount),
     }));
+
+    // merge progress when authenticated
+    if (userId) {
+      const materialIds = results.map((r) => r.id);
+      const progressMap = await this.progressService.getBatchProgress(userId, materialIds);
+      return results.map((r) => ({
+        ...r,
+        progress: progressMap[r.id] || null,
+      }));
+    }
+
+    return results;
   }
 
   async findById(id: string): Promise<Material> {

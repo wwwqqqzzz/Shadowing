@@ -1,5 +1,5 @@
 const { getMockMaterial } = require('../../mock/data')
-const { getMaterial, getSentences, createPracticeRecord } = require('../../utils/api')
+const { getMaterial, getSentences, createPracticeRecord, saveProgress } = require('../../utils/api')
 const { isLoggedIn, login } = require('../../utils/auth')
 
 const WAIT_MS = 2500
@@ -7,6 +7,7 @@ const SPEEDS = [0.5, 0.8, 1, 1.25, 1.5, 2]
 
 Page({
   data: {
+    materialId: '',
     material: null,
     sentences: [],
     currentIndex: 0,
@@ -88,7 +89,7 @@ Page({
       console.log('[onLoad] material.audioUrl=', material.audioUrl, 'material.audioOffsetMs=', material.audioOffsetMs)
       console.log('[onLoad] sentences count=', sentences.length, 'first audioUrl=', sentences[0] && sentences[0].audioUrl, 'first text=', sentences[0] && sentences[0].text && sentences[0].text.substring(0, 30))
       const startIndex = Math.max(0, sentences.findIndex(s => s.order >= startOrder))
-      this.setData({ material, sentences, currentIndex: startIndex > 0 ? startIndex : 0 })
+      this.setData({ materialId, material, sentences, currentIndex: startIndex > 0 ? startIndex : 0 })
     } catch (err) {
       console.error('拉取失败，降级到本地 mock', err)
       const fallback = getMockMaterial('mock-001')
@@ -109,6 +110,20 @@ Page({
     this.recorder.stop()
     this._destroyAudio()
     this._destroyPlayback()
+    this._saveCurrentProgress()
+  },
+
+  onHide() {
+    this._saveCurrentProgress()
+  },
+
+  _saveCurrentProgress() {
+    const { materialId, sentences, currentIndex } = this.data
+    if (!materialId || !sentences || !sentences.length) return
+    const currentOrder = sentences[currentIndex] && sentences[currentIndex].order
+    if (currentOrder) {
+      saveProgress(materialId, currentOrder, sentences.length)
+    }
   },
 
   // ─── Destroy audio context ─────────────────────────────
@@ -149,6 +164,7 @@ Page({
     const isLast = this.data.currentIndex >= this.data.sentences.length - 1
 
     if (isLast) {
+      saveProgress(this.data.materialId, 1, this.data.sentences.length)
       this.setData({ status: 'finished' })
       return
     }

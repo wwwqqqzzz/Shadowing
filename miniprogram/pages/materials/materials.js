@@ -42,6 +42,12 @@ Page({
         _durationText: formatDuration(item.durationMs),
         accent: item.accent || 'american',
         isFavorited: favIds.has(item.id),
+        _progressText: item.progress
+          ? item.progress.percent >= 95
+            ? '已完成 ✓'
+            : `${item.progress.percent}%`
+          : null,
+        _progressPercent: item.progress ? item.progress.percent : 0,
       }))
       this.setData({ materials, loading: false })
       this.applyFilters()

@@ -10,6 +10,7 @@ import { PracticeRecordsModule } from './practice-records/practice-records.modul
 import { AsrModule } from './asr/asr.module';
 import { AppConfigModule } from './app-config/app-config.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { ProgressModule } from './progress/progress.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { FavoritesModule } from './favorites/favorites.module';
     AsrModule,
     AppConfigModule,
     FavoritesModule,
+    ProgressModule,
   ],
 })
 export class AppModule {}

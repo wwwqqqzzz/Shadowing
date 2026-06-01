@@ -33,6 +33,18 @@ const getStreakStats = () =>
 const getLastProgress = () =>
   request({ url: '/practice-records/my/last-progress' })
 
+const saveProgress = (materialId, sentenceOrder, totalSentences) =>
+  request({
+    url: '/progress',
+    method: 'POST',
+    data: { materialId, sentenceOrder, totalSentences },
+  }).catch(err => {
+    console.warn('保存进度失败', err)
+  })
+
+const getProgress = (materialId) =>
+  request({ url: `/progress/${materialId}` }).catch(() => null)
+
 const addFavorite = (materialId) =>
   request({ url: `/favorites/${materialId}`, method: 'POST' })
 
@@ -47,6 +59,6 @@ module.exports = {
   createPracticeRecord,
   getMyRecords, getMyStats,
   getWrongSentences, getWrongCount, getStreakStats,
-  getLastProgress,
+  getLastProgress, saveProgress, getProgress,
   addFavorite, removeFavorite, getMyFavorites,
 }

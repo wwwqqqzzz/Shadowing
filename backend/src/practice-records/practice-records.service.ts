@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { PracticeRecord } from './entities/practice-record.entity';
 import { AppConfig } from '../app-config/entities/app-config.entity';
 import { Sentence } from '../sentences/entities/sentence.entity';
+import { Progress } from '../progress/entities/progress.entity';
 
 @Injectable()
 export class PracticeRecordsService {
@@ -14,6 +15,8 @@ export class PracticeRecordsService {
     private readonly configRepo: Repository<AppConfig>,
     @InjectRepository(Sentence)
     private readonly sentenceRepo: Repository<Sentence>,
+    @InjectRepository(Progress)
+    private readonly progressRepo: Repository<Progress>,
   ) {}
 
   async create(data: { sentenceId: string; userId: string; durationMs: number }): Promise<PracticeRecord> {
@@ -26,6 +29,34 @@ export class PracticeRecordsService {
   }
 
   async getLastProgress(userId: string) {
+    // prefer progress table (more accurate, saved on exit)
+    const latestProgress = await this.progressRepo.findOne({
+      where: { user: { id: userId } },
+      relations: { material: true },
+      order: { updatedAt: 'DESC' },
+    });
+
+    if (latestProgress) {
+      const mat = latestProgress.material as any;
+      return {
+        material: {
+          id: mat.id,
+          title: mat.title,
+          audioUrl: mat.audioUrl,
+          level: mat.level,
+          accent: mat.accent || 'american',
+          source: mat.source,
+          totalSentences: latestProgress.totalSentences,
+        },
+        lastSentenceOrder: latestProgress.sentenceOrder,
+        totalSentences: latestProgress.totalSentences,
+        progressPercent: Math.round(
+          (latestProgress.sentenceOrder / latestProgress.totalSentences) * 100,
+        ),
+      };
+    }
+
+    // fallback to practice_record (legacy)
     const record = await this.recordRepo.findOne({
       where: { user: { id: userId } },
       relations: { sentence: { material: true } },
