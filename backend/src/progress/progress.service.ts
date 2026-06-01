@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Progress } from './entities/progress.entity';
+import { Material } from '../materials/entities/material.entity';
 
 @Injectable()
 export class ProgressService {
@@ -52,48 +53,54 @@ export class ProgressService {
   > {
     if (materialIds.length === 0) return {};
 
-    const records = await this.progressRepo.find({
-      where: materialIds.map((id) => ({
-        user: { id: userId },
-        material: { id },
-      })),
-    });
+    const rawRows = await this.progressRepo
+      .createQueryBuilder('p')
+      .select('p.id', 'id')
+      .addSelect('p.sentenceOrder', 'sentenceOrder')
+      .addSelect('p.totalSentences', 'totalSentences')
+      .addSelect('p.materialId', 'materialId')
+      .where('p.userId = :userId', { userId })
+      .andWhere('p.materialId IN (:...materialIds)', { materialIds })
+      .getRawMany();
 
     const result: Record<string, { sentenceOrder: number; totalSentences: number; percent: number }> = {};
-    for (const r of records) {
-      const matId = (r.material as any).id;
-      result[matId] = {
-        sentenceOrder: r.sentenceOrder,
-        totalSentences: r.totalSentences,
-        percent: Math.round((r.sentenceOrder / r.totalSentences) * 100),
+    for (const r of rawRows) {
+      result[r.materialId] = {
+        sentenceOrder: Number(r.sentenceOrder),
+        totalSentences: Number(r.totalSentences),
+        percent: Math.round((Number(r.sentenceOrder) / Number(r.totalSentences)) * 100),
       };
     }
     return result;
   }
 
   async getLatestProgress(userId: string) {
-    const progress = await this.progressRepo.findOne({
-      where: { user: { id: userId } },
-      relations: { material: true },
-      order: { updatedAt: 'DESC' },
-    });
+    const row = await this.progressRepo
+      .createQueryBuilder('p')
+      .where('p.userId = :userId', { userId })
+      .orderBy('p.updatedAt', 'DESC')
+      .getOne();
 
-    if (!progress) return null;
+    if (!row) return null;
+
+    const matId = (row as any).materialId;
+    const mat = await this.progressRepo.manager.findOne(Material, { where: { id: matId } });
+    if (!mat) return null;
 
     return {
       material: {
-        id: (progress.material as any).id,
-        title: (progress.material as any).title,
-        audioUrl: (progress.material as any).audioUrl,
-        level: (progress.material as any).level,
-        accent: (progress.material as any).accent || 'american',
-        source: (progress.material as any).source,
-        totalSentences: progress.totalSentences,
+        id: mat.id,
+        title: mat.title,
+        audioUrl: mat.audioUrl,
+        level: mat.level,
+        accent: mat.accent || 'american',
+        source: mat.source,
+        totalSentences: row.totalSentences,
       },
-      lastSentenceOrder: progress.sentenceOrder,
-      totalSentences: progress.totalSentences,
+      lastSentenceOrder: row.sentenceOrder,
+      totalSentences: row.totalSentences,
       progressPercent: Math.round(
-        (progress.sentenceOrder / progress.totalSentences) * 100,
+        (row.sentenceOrder / row.totalSentences) * 100,
       ),
     };
   }
