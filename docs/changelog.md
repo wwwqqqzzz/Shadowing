@@ -1,5 +1,37 @@
 # Shadowing — 变更日志
 
+## [2.4.0] — 2026-06-02
+
+### 新增
+
+#### 首页改造
+- Hero 卡片：进度条加粗 6rpx + min-width 12rpx（低进度也可见）；label+title+meta 信息层级
+- 难度入口：三分格 level-card + 左侧色条（绿/黄/红）
+- 新增「最近加入」区块：显示最新 2 条素材，点击进入练习
+
+#### 素材库改进
+- 进度条加粗 6rpx + min-width 16rpx
+- 筛选栏可折叠：默认只显示口音行，点击「更多筛选」展开
+- 卡片左侧 4rpx 色条按难度着色
+- source 标签改为轻量灰色文字（无背景胶囊）
+
+#### 练习页重设计
+- 字幕区行间距 → CSS 变量（line-height-normal/loose）
+- 反馈区重设计：得分+分标签、漏读轻量标签（带边框）、文本对比加分隔线
+- 控制栏 → space-between 均衡布局，播放按钮 ctrl-btn-primary，循环键 active 态
+
+#### 个人中心修复
+- extra-stats 从水平双列改为垂直列表（label 左 + value 右），文字不再截断
+- 统计区块 px→rpx 统一
+
+### 修复
+
+- **自动录音模式评分跳转过快**：评分显示后等 3 秒再跳下一句，而非录音结束 1.5 秒就跳
+- formatDuration：<60秒显示 `N秒` 而非 `0:01`
+- 数据库 source 字段：所有 yt-slug 改为人可读名称（Speak English with Vanessa、TED-Ed 等）
+
+---
+
 ## [2.3.0] — 2026-06-02
 
 ### 修复

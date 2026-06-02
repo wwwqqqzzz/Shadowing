@@ -1,6 +1,6 @@
 # Shadowing 影子跟读 — Project Knowledge Base
 
-**Updated:** 2026-06-01
+**Updated:** 2026-06-02
 **Branch:** main
 
 ## OVERVIEW
@@ -85,12 +85,19 @@ profile ──settings──→ settings (练习模式选择)
 
 ### 导航重构+首页+素材库升级
 - tabBar: 3-tab (训练/素材库/我的)，深色主题
-- 首页: hero CTA 3状态(继续上次/今日推荐/去选择)，streak条，错题提醒，难度快速筛选
-- 素材库: accent/level/duration/favOnly筛选，搜索，♥收藏切换
-- 练习页: startOrder参数支持续练
+- 首页: hero CTA 3状态(继续/已完成/开始)，streak条，错题提醒，难度level-card+最近加入区块
+- 素材库: accent/level/duration/favOnly筛选（可折叠），搜索，♥收藏，卡片难度色条
+- 练习页: startOrder参数支持续练，自动录音模式评分后3秒再跳句
 - 收藏: 后端favorites模块(CRUD)，小程序端Promise.all合并isFavorited
 - 后端: accent列，duration过滤器，last-progress接口，admin PATCH :id
 - 管理后台: MaterialList编辑Modal(accent/level/status)
+
+### v2.4.0 UI 全面改造
+- 首页: 进度条6rpx+min-width，Hero信息层级(label+title+meta)，level-card色条，最近加入区块
+- 素材库: 进度条6rpx+min-width，筛选栏折叠，source轻量化，卡片色条
+- 练习页: 字幕行高CSS变量化，反馈区重设计(得分+标签+分隔线)，控制栏均衡布局
+- 个人中心: extra-stats垂直列表，formatDuration秒级显示
+- 数据: source字段人可读名称
 
 ## CONVENTIONS
 
