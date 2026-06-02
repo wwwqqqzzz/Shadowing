@@ -1,4 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { execSync } from 'child_process';
+import * as crypto from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface PronounceResult {
   word: string;
@@ -64,7 +68,7 @@ export class PronounceService {
         word: normalized,
         ipa: ipa || null,
         ipaAlt: ipaAlt || null,
-        audioUrl: audioUrl || null,
+        audioUrl: audioUrl || this._generateLocalAudio(normalized),
       };
       cache.set(normalized, result);
       return result;
@@ -73,10 +77,32 @@ export class PronounceService {
         word: normalized,
         ipa: null,
         ipaAlt: null,
-        audioUrl: null,
+        audioUrl: this._generateLocalAudio(normalized),
       };
       cache.set(normalized, result);
       return result;
+    }
+  }
+
+  _generateLocalAudio(word: string): string | null {
+    try {
+      const audioDir = path.join(process.cwd(), 'audio', 'pronounce');
+      if (!fs.existsSync(audioDir)) {
+        fs.mkdirSync(audioDir, { recursive: true });
+      }
+      const filename = `${word}_${crypto.createHash('md5').update(word).digest('hex').slice(0, 6)}.aiff`;
+      const filePath = path.join(audioDir, filename);
+
+      if (!fs.existsSync(filePath)) {
+        execSync(`say -v Samantha -o "${filePath}" "${word}"`, {
+          timeout: 5000,
+          stdio: 'pipe',
+        });
+      }
+
+      return `/audio/pronounce/${filename}`;
+    } catch {
+      return null;
     }
   }
 }

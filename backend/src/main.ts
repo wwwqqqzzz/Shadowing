@@ -24,10 +24,12 @@ async function bootstrap() {
   const tmpAudioPath = resolve(dir, 'tmp');
   const mockAudioPath = resolve(dir, 'miniprogram', 'mock', 'audio');
   const assessmentAudioPath = resolve(dir, 'miniprogram', 'assessment', 'audio');
+  const pronounceAudioPath = resolve(dir, 'backend', 'audio', 'pronounce');
   app.useStaticAssets(uploadsAudioPath, { prefix: '/audio/', setHeaders: (res) => { res.setHeader('Cache-Control', 'no-store'); } });
   app.useStaticAssets(tmpAudioPath, { prefix: '/audio/', setHeaders: (res) => { res.setHeader('Cache-Control', 'no-store'); } });
   app.useStaticAssets(mockAudioPath, { prefix: '/audio/', setHeaders: (res) => { res.setHeader('Cache-Control', 'no-store'); } });
   app.useStaticAssets(assessmentAudioPath, { prefix: '/assessment/audio/', setHeaders: (res) => { res.setHeader('Cache-Control', 'no-store'); } });
+  app.useStaticAssets(pronounceAudioPath, { prefix: '/audio/pronounce/', setHeaders: (res) => { res.setHeader('Cache-Control', 'public, max-age=86400'); } });
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
