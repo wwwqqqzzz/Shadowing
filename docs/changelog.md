@@ -5,7 +5,7 @@
 ### 新增
 
 #### 语境窗口（Context Window）
-- 小程序：字幕区 3 层视觉层级 — 当前句高亮（品牌色+大字）、前后各 1 句半透明可读（0.5）、其余极淡（0.12+小字）
+- 小程序：字幕区 3 层视觉层级 — 当前句高亮（品牌色+大字）、前后各 1 句半透明可读（0.55）、其余淡灰（0.25+小字）
 - 小程序：WXML 条件类 active/nearby/dimmed 替代原有 active/空二元
 - 小程序：WXSS 0.3s transition 动画过渡切换句子时的视觉变化
 - 纯前端实现，零后端改动，零 JS 逻辑改动
@@ -13,13 +13,16 @@
 #### 逐词渲染 + 实时高亮 + 长按发音 + 词级音标
 - 后端：Sentence 实体新增 `wordTimings` JSON 列（每词 {word, start, end} 毫秒偏移）
 - 后端：新增 `/api/pronounce/:word` 公开接口 — 代理 Free Dictionary API，返回 IPA 音标+发音音频 URL，内存缓存
+- 后端：Free Dictionary API 无音频时自动用 macOS `say -v Samantha` 生成 AIFF 发音文件，本地缓存 24h
+- 后端：`/audio/pronounce/` 静态文件 serve + 24h 缓存头
 - 后端：新 PronounceModule（controller + service + module）注册到 AppModule
 - 对齐脚本：`align_sentences.py` 提取 Whisper word_timestamps 写入 wordTimings 字段
 - 小程序：练习页当前句逐词渲染（`<view wx:for="currentWords">`），每词可 `bindlongpress`
-- 小程序：100ms 轮询追踪 `currentWordIndex`，当前词品牌色底色高亮（`.word-highlight`）
-- 小程序：长按单词 → 调用 /pronounce/:word → 播放真人发音 + 显示 IPA 音标
-- 小程序：发音缓存（`_pronounceCache`）避免重复请求
+- 小程序：100ms 轮询追踪 `currentWordIndex`，当前词品牌色底色+scale(1.05)高亮（`.word-highlight`）
+- 小程序：长按单词 → 播放真人/TTS发音 + 显示 IPA 音标（1.5s 后消失）
+- 小程序：进入新句时 `_prefetchPronunciations` 并行预取所有未缓存单词发音，长按即播零延迟
 - 小程序：api.js 新增 `getPronounce`
+- 小程序：翻译始终显示在逐词渲染区下方，不受 word-row 影响
 
 ## [2.6.0] — 2026-06-02
 
