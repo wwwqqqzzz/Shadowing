@@ -13,7 +13,15 @@
 - 小程序：app.js onboarding 检查（未完成自动跳转引导页）
 - 小程序：api.js 新增 getAssessmentSentences/submitAssessment/getAssessmentProfile
 - 管理数据：GET /assessment/admin/stats 聚合统计（总测评数、等级分布、匹配率、平均分）
-- 音频生成：backend/scripts/generate-assessment-audio.js (OpenAI TTS)
+- 测评音频：macOS say 生成 5 句 mp3（Samantha 语音，语速递增 beginner→fluent）
+- 后端：main.ts 新增 /assessment/audio/ 静态文件 serve
+- PostgreSQL：5 条 assessment_sentence 种子数据已插入
+
+### 修复
+
+- onboarding.js request 导入修复（module.exports 不是具名导出）
+- 测评页音频路径：拼完整 http URL（InnerAudioContext 不支持相对路径）
+- 测评句空表：补充 5 条种子数据
 
 ---
 
