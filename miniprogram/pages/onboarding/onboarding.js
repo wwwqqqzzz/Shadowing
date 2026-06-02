@@ -1,6 +1,8 @@
 const request = require('../../utils/request')
 const { isLoggedIn, login } = require('../../utils/auth')
 
+const BASE_URL = 'http://localhost:3000'
+
 const LEVELS = [
   { key: 'beginner', name: '入门', desc: '刚开始学，基础发音' },
   { key: 'elementary', name: '基础', desc: '能说简单句子，但不流畅' },
@@ -92,7 +94,7 @@ Page({
     ac.obeyMuteSwitch = false
     let url = sentence.audioUrl
     if (url && !url.startsWith('http') && !url.startsWith('wxfile://')) {
-      url = 'http://localhost:3000/audio' + url
+      url = BASE_URL + url
     }
     ac.src = url
     ac.onEnded(() => {
