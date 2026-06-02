@@ -1,4 +1,4 @@
-const { request } = require('../../utils/request')
+const request = require('../../utils/request')
 const { isLoggedIn, login } = require('../../utils/auth')
 
 const LEVELS = [
