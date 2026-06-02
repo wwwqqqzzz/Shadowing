@@ -6,7 +6,8 @@
     "pages/profile/profile",
     "pages/wrong-book/wrong-book",
     "pages/wrong-review/wrong-review",
-    "pages/settings/settings"
+    "pages/settings/settings",
+    "pages/onboarding/onboarding"
   ],
   "window": {
     "navigationBarTitleText": "影读",

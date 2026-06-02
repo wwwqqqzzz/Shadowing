@@ -1,0 +1,261 @@
+.onboarding-page {
+  min-height: 100vh;
+  background-color: var(--color-bg-base);
+  padding: var(--page-padding);
+  display: flex;
+  flex-direction: column;
+}
+
+.step-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-container--practice {
+  justify-content: center;
+}
+
+.step-header {
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-6);
+}
+
+.step-title {
+  display: block;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.step-subtitle {
+  display: block;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-loose);
+}
+
+/* Level selection cards */
+.level-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.level-card {
+  background-color: var(--color-bg-elevated);
+  border: 2rpx solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.level-card--active {
+  border-color: var(--color-brand);
+  background-color: var(--color-brand-dim);
+}
+
+.level-card__name {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.level-card__desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Buttons */
+.step-footer {
+  margin-top: auto;
+  padding-top: var(--space-5);
+  padding-bottom: var(--space-8);
+}
+
+.step-footer--column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.btn-primary {
+  background-color: var(--color-brand);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) 0;
+  text-align: center;
+  border: none;
+  width: 100%;
+}
+
+.btn-primary--disabled {
+  opacity: 0.4;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  border: 2rpx solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) 0;
+  text-align: center;
+  width: 100%;
+}
+
+/* Assessment practice */
+.assessment-progress {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.assessment-progress__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.assessment-progress__count {
+  font-size: var(--font-size-sm);
+  color: var(--color-brand);
+  font-weight: var(--font-weight-semibold);
+}
+
+.assessment-progress-bar {
+  height: 6rpx;
+  background-color: var(--color-bg-overlay);
+  border-radius: 3rpx;
+  overflow: hidden;
+  margin-bottom: var(--space-8);
+}
+
+.assessment-progress-bar__fill {
+  height: 100%;
+  background-color: var(--color-brand);
+  border-radius: 3rpx;
+  transition: width 0.3s ease;
+}
+
+.sentence-display {
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.sentence-text {
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-loose);
+  text-align: center;
+  display: block;
+}
+
+.assessment-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 120rpx;
+}
+
+.status-label {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.status-label--playing {
+  color: var(--color-brand);
+}
+
+.status-label--recording {
+  color: var(--color-recording);
+}
+
+.feedback-score {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.feedback-score__value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand);
+}
+
+.feedback-score__unit {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin-left: var(--space-1);
+}
+
+/* Results */
+.result-card {
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) 0;
+}
+
+.result-label {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.result-value {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.result-value--highlight {
+  color: var(--color-brand);
+}
+
+.result-message {
+  display: block;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-loose);
+  margin-bottom: var(--space-5);
+}
+
+.recommended-title {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.recommended-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.recommended-item__name {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+.recommended-item__level {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}

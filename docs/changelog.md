@@ -1,5 +1,22 @@
 # Shadowing — 变更日志
 
+## [2.5.0] — 2026-06-02
+
+### 新增
+
+#### 能力测评系统
+- 后端：AssessmentSentence entity (a001~a005, 5级难度), UserProfile entity
+- 后端：assessment 模块 — GET /sentences, POST /submit, GET /profile, GET /admin/stats
+- 等级计算：avgScore→5级映射, selfReported vs assessed → accurate/underestimated/overestimated
+- 推荐素材：按 assessedLevel 筛选 published 素材, 最多 3 条
+- 小程序：onboarding 页 4 步流程（自报水平→选测评→测评跟读→结果展示）
+- 小程序：app.js onboarding 检查（未完成自动跳转引导页）
+- 小程序：api.js 新增 getAssessmentSentences/submitAssessment/getAssessmentProfile
+- 管理数据：GET /assessment/admin/stats 聚合统计（总测评数、等级分布、匹配率、平均分）
+- 音频生成：backend/scripts/generate-assessment-audio.js (OpenAI TTS)
+
+---
+
 ## [2.4.0] — 2026-06-02
 
 ### 新增

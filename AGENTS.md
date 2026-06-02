@@ -13,12 +13,12 @@ Shadowing 跟读训练系统：微信小程序 + NestJS 后端 + React 管理后
 ```
 Shadowing/
 ├── miniprogram/      # 原生微信小程序 (WXML+WXSS+JS)
-│   ├── pages/       # 7 页面: home/materials/practice/profile/wrong-book/wrong-review/settings
+│   ├── pages/       # 8 页面: home/materials/practice/profile/wrong-book/wrong-review/settings/onboarding
 │   ├── components/  # 3 组件: player/recorder/subtitle (未注册)
 │   ├── utils/       # api/auth/format/request/util
 │   └── mock/        # Phase 0 mock 数据
 ├── backend/         # NestJS API (TypeScript + TypeORM + PostgreSQL)
-│   └── src/         # 9 模块: auth/materials/sentences/practice-records/users/asr/config/app-config/favorites
+│   └── src/         # 10 模块: auth/materials/sentences/practice-records/users/asr/config/app-config/favorites/assessment
 ├── admin/           # React 19 + Ant Design 6 + Vite 8 后台管理
 │   └── src/         # 2 页面: MaterialList(含编辑Modal)/ImportMaterial
 ├── docs/            # 产品规范
@@ -38,6 +38,8 @@ materials ──tap card──→ practice (materialId)
 materials ──♥──→ favorites API (POST/DELETE)
 profile ──streak calendar──→ (3级: year/month/day)
 profile ──settings──→ settings (练习模式选择)
+onboarding ──4步──→ practice (推荐素材) 或 materials (tabBar)
+首次进入 ──app.js检查──→ onboarding (如果未完成)
 ```
 
 ## WHERE TO LOOK
@@ -52,6 +54,9 @@ profile ──settings──→ settings (练习模式选择)
 | 后端服务层 | `backend/src/*/*.service.ts` | 8 services |
 | 收藏模块 | `backend/src/favorites/` | Entity(唯一索引[user,material]) + Service + Controller(POST/DELETE/GET) |
 | 续练接口 | `backend/src/practice-records/practice-records.controller.ts` | GET my/last-progress |
+| 测评+引导 | `miniprogram/pages/onboarding/` | 4步引导(自报→选测评→测评跟读→结果) |
+| 测评后端 | `backend/src/assessment/` | entity+service+controller, 等级计算+推荐 |
+| 用户画像 | `backend/src/users/entities/user-profile.entity.ts` | selfReportedLevel/assessedLevel/onboardingStatus |
 | 后台管理 | `admin/src/pages/MaterialList.tsx` | 素材列表+编辑Modal(accent/level/status) |
 | 小程序 API | `miniprogram/utils/api.js` | 11个API函数，含getLastProgress/addFavorite/removeFavorite/getMyFavorites |
 | 鉴权流程 | `miniprogram/utils/auth.js` + `backend/src/auth/` | JWT + wx.login |
@@ -91,6 +96,14 @@ profile ──settings──→ settings (练习模式选择)
 - 收藏: 后端favorites模块(CRUD)，小程序端Promise.all合并isFavorited
 - 后端: accent列，duration过滤器，last-progress接口，admin PATCH :id
 - 管理后台: MaterialList编辑Modal(accent/level/status)
+
+### 能力测评系统 (Assessment)
+- 后端: AssessmentSentence entity (a001~a005, 5级), UserProfile entity, assessment模块
+- 接口: GET /assessment/sentences (公开), POST /assessment/submit (JWT), GET /assessment/profile (JWT), GET /assessment/admin/stats (公开)
+- 等级计算: avgScore→5级映射, selfReported vs assessed → accurate/underestimated/overestimated
+- 推荐素材: 按assessedLevel筛选published素材, 最多3条
+- 小程序: onboarding页4步(自报→选测评→测评跟读→结果), app.js onboarding检查
+- 测评跟读: 复用音频播放+录音逻辑, 强制auto模式, 5句后自动提交
 
 ### v2.4.0 UI 全面改造
 - 首页: 进度条6rpx+min-width，Hero信息层级(label+title+meta)，level-card色条，最近加入区块
@@ -193,6 +206,10 @@ HH:MM — Operation: file path
 | DELETE | `/favorites/:materialId` | FavoritesController.removeFavorite | JWT |
 | GET | `/favorites/my` | FavoritesController.getMyFavorites | JWT |
 | GET | `/users/me` | UsersController.getProfile | JWT |
+| GET | `/assessment/sentences` | AssessmentController.getSentences | No |
+| POST | `/assessment/submit` | AssessmentController.submit | JWT |
+| GET | `/assessment/profile` | AssessmentController.getProfile | JWT |
+| GET | `/assessment/admin/stats` | AssessmentController.getStats | No |
 
 ## DB SCHEMA
 
@@ -203,4 +220,6 @@ PracticeRecord: id(uuid), audioUrl?, score?, errorWords?, durationMs, createdAt 
 User: id(uuid), openid(unique), nickname?, avatarUrl?, preferredLanguage, createdAt
 AppConfig: id(uuid), key(unique), value
 Favorite: id(uuid), createdAt → User, → Material  [UNIQUE(user, material)]
+AssessmentSentence: id(pk a001~a005), level, text, audioUrl, order, createdAt
+UserProfile: id(uuid), → User, selfReportedLevel?, assessedLevel?, assessmentScore?, hasCompletedAssessment, assessmentCompletedAt?, onboardingStatus, createdAt, updatedAt
 ```

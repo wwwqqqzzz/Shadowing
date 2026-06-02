@@ -57,6 +57,15 @@ const removeFavorite = (materialId) =>
 const getMyFavorites = () =>
   request({ url: '/favorites/my' })
 
+const getAssessmentSentences = () =>
+  request({ url: '/assessment/sentences' })
+
+const submitAssessment = (data) =>
+  request({ url: '/assessment/submit', method: 'POST', data })
+
+const getAssessmentProfile = () =>
+  request({ url: '/assessment/profile' })
+
 module.exports = {
   getMaterials, getMaterial, getSentences,
   createPracticeRecord,
@@ -64,4 +73,5 @@ module.exports = {
   getWrongSentences, getWrongCount, getStreakStats,
   getLastProgress, saveProgress, getProgress,
   addFavorite, removeFavorite, getMyFavorites,
+  getAssessmentSentences, submitAssessment, getAssessmentProfile,
 }

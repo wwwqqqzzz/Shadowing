@@ -1,0 +1,129 @@
+<view class="onboarding-page">
+  <!-- Step 1: Self-reported level -->
+  <block wx:if="{{step === 1}}">
+    <view class="step-container">
+      <view class="step-header">
+        <text class="step-title">欢迎使用影读</text>
+        <text class="step-subtitle">你现在的英语口语水平大概是？</text>
+      </view>
+
+      <view class="level-list">
+        <view
+          wx:for="{{levels}}"
+          wx:key="key"
+          class="level-card {{selfReportedLevel === item.key ? 'level-card--active' : ''}}"
+          data-level="{{item.key}}"
+          bindtap="onSelectLevel"
+        >
+          <text class="level-card__name">{{item.name}}</text>
+          <text class="level-card__desc">{{item.desc}}</text>
+        </view>
+      </view>
+
+      <view class="step-footer">
+        <button
+          class="btn-primary {{selfReportedLevel ? '' : 'btn-primary--disabled'}}"
+          disabled="{{!selfReportedLevel}}"
+          bindtap="onNext"
+        >下一步</button>
+      </view>
+    </view>
+  </block>
+
+  <!-- Step 2: Choose assessment or skip -->
+  <block wx:elif="{{step === 2}}">
+    <view class="step-container">
+      <view class="step-header">
+        <text class="step-title">想知道你的真实水平吗？</text>
+        <text class="step-subtitle">做一个 2 分钟的跟读测评，系统会根据结果为你推荐最合适的素材</text>
+      </view>
+
+      <view class="step-footer step-footer--column">
+        <button class="btn-primary" bindtap="onStartAssessment">开始测评</button>
+        <button class="btn-secondary" bindtap="onSkipAssessment">先跳过，直接开始练</button>
+      </view>
+    </view>
+  </block>
+
+  <!-- Step 3: Assessment practice -->
+  <block wx:elif="{{step === 3}}">
+    <view class="step-container step-container--practice">
+      <view class="assessment-progress">
+        <text class="assessment-progress__label">测评进行中</text>
+        <text class="assessment-progress__count">{{currentSentenceIndex + 1}} / {{sentences.length}}</text>
+      </view>
+
+      <view class="assessment-progress-bar">
+        <view class="assessment-progress-bar__fill" style="width: {{(currentSentenceIndex + 1) / sentences.length * 100}}%"></view>
+      </view>
+
+      <view class="sentence-display">
+        <text class="sentence-text">{{sentences[currentSentenceIndex].text}}</text>
+      </view>
+
+      <view class="assessment-status">
+        <block wx:if="{{playing}}">
+          <text class="status-label status-label--playing">播放中...</text>
+        </block>
+        <block wx:elif="{{recording}}">
+          <text class="status-label status-label--recording">正在录音...</text>
+        </block>
+        <block wx:elif="{{feedback}}">
+          <view class="feedback-score">
+            <text class="feedback-score__value">{{feedback.score}}</text>
+            <text class="feedback-score__unit">分</text>
+          </view>
+        </block>
+        <block wx:elif="{{status === 'waiting'}}">
+          <text class="status-label">准备录音...</text>
+        </block>
+      </view>
+    </view>
+  </block>
+
+  <!-- Step 4: Results -->
+  <block wx:elif="{{step === 4}}">
+    <view class="step-container">
+      <view class="step-header">
+        <text class="step-title">测评结果</text>
+      </view>
+
+      <block wx:if="{{assessmentResponse}}">
+        <view class="result-card">
+          <view class="result-row">
+            <text class="result-label">自报水平</text>
+            <text class="result-value">{{selfReportedLevel}}</text>
+          </view>
+          <view class="result-row">
+            <text class="result-label">测评水平</text>
+            <text class="result-value result-value--highlight">
+              {{assessmentResponse.assessedLevel}}
+              <text wx:if="{{assessmentResponse.levelMatch === 'underestimated'}}">↑</text>
+              <text wx:elif="{{assessmentResponse.levelMatch === 'overestimated'}}">↓</text>
+            </text>
+          </view>
+        </view>
+
+        <text class="result-message">{{assessmentResponse.message}}</text>
+
+        <block wx:if="{{assessmentResponse.recommendedMaterials.length > 0}}">
+          <view class="recommended-list">
+            <text class="recommended-title">为你推荐的素材：</text>
+            <view
+              wx:for="{{assessmentResponse.recommendedMaterials}}"
+              wx:key="id"
+              class="recommended-item"
+            >
+              <text class="recommended-item__name">{{item.title}}</text>
+              <text class="recommended-item__level">{{item.level}}</text>
+            </view>
+          </view>
+        </block>
+      </block>
+
+      <view class="step-footer">
+        <button class="btn-primary" bindtap="onStartPractice">开始练习</button>
+      </view>
+    </view>
+  </block>
+</view>

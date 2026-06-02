@@ -9,9 +9,19 @@ App({
         icon: 'none',
         duration: 3000
       })
+    }).then(() => {
+      this.checkOnboarding()
     })
   },
   globalData: {
     pendingFilter: null
+  },
+  async checkOnboarding() {
+    const done = wx.getStorageSync('onboardingDone')
+    if (!done) {
+      setTimeout(() => {
+        wx.navigateTo({ url: '/pages/onboarding/onboarding' })
+      }, 500)
+    }
   }
 })
