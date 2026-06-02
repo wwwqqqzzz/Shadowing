@@ -27,6 +27,7 @@ Page({
     sessionScores: [],
     finishedData: null,
     waitMs: DEFAULT_WAIT_MS,
+    wordDisplayData: [],
     modeModes: [
       { key: 'free', icon: '', name: '自由模式', desc: '播完自动进下一句，不录音，适合通勤听' },
       { key: 'auto', icon: '', name: '自动录音', desc: '播完自动录音评分，适合认真练习' },
@@ -367,7 +368,7 @@ Page({
     this._clearWait()
     if (this._autoNextTimer) { clearTimeout(this._autoNextTimer); this._autoNextTimer = null }
     if (this._feedbackTimeout) { clearTimeout(this._feedbackTimeout); this._feedbackTimeout = null }
-    this.setData({ recordPath: null, feedback: null, showFeedback: false })
+    this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [] })
     this._destroyPlayback()
     const next = this.data.currentIndex + 1
     if (next < this.data.sentences.length) {
@@ -426,7 +427,7 @@ Page({
 
   onTapSentence(e) {
     this._clearWait()
-    this.setData({ recordPath: null, feedback: null, showFeedback: false })
+    this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [] })
     this._destroyPlayback()
     const index = Number(e.currentTarget.dataset.index)
     this._playSentence(index)
@@ -434,7 +435,7 @@ Page({
 
   onSkipPrev() {
     this._clearWait()
-    this.setData({ recordPath: null, feedback: null, showFeedback: false })
+    this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [] })
     this._destroyAudio()
     this._destroyPlayback()
     const idx = Math.max(0, this.data.currentIndex - 1)
@@ -443,7 +444,7 @@ Page({
 
   onSkipNext() {
     this._clearWait()
-    this.setData({ recordPath: null, feedback: null, showFeedback: false })
+    this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [] })
     this._destroyAudio()
     this._destroyPlayback()
     const next = this.data.currentIndex + 1
@@ -559,7 +560,17 @@ Page({
       },
       success: (res) => {
         const result = JSON.parse(res.data)
-        this.setData({ feedback: result, showFeedback: true })
+        const wordResults = result.wordResults || []
+        const wordDisplayData = wordResults.map((w) => ({
+          word: w.word,
+          status: w.status,
+          recognized: w.recognized || '',
+        }))
+        this.setData({
+          feedback: result,
+          showFeedback: true,
+          wordDisplayData,
+        })
         if (this.data.practiceMode === 'auto' && result.score != null) {
           this.setData({ sessionScores: [...this.data.sessionScores, result.score] })
         }

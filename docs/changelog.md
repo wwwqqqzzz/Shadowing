@@ -1,5 +1,32 @@
 # Shadowing — 变更日志
 
+## [2.6.0] — 2026-06-02
+
+### 新增
+
+#### 词级评分反馈（Phase 1 + Phase 2）
+- 后端：asr.service.ts 用 SequenceMatcher LCS 算法替换 Set 匹配，返回 wordResults（每词标注 correct/missing/mispronounced/extra）
+- 后端：asr.service.ts 新增 evaluateWithLLM()，评分 40-80 区间调用 DeepSeek V4 增强（判断同音词、缩写、口语变体）
+- 后端：asr.controller.ts 评分管道升级 — Whisper ASR → 算法对齐 → 低置信度 LLM → 返回 wordResults + llmUsed 标志
+- 后端：.env 新增 DEEPSEEK_API_KEY / DEEPSEEK_BASE_URL 配置
+- 小程序：practice.js 解析 wordResults 生成 wordDisplayData
+- 小程序：practice.wxml 词级高亮（✅correct 绿色 / ❌missing 红色删除线 / ⚠️mispronounced 黄色下划线+提示 / extra 灰色斜体）
+- 小程序：practice.wxss 新增 word-level 样式（4配色+flex wrap 布局）
+- 降级兜底：无 wordResults 时仍显示旧的 missingWords 标签
+
+### 改进
+
+- 评分准确度：从词袋 Set 匹配升级为有序 LCS 对齐，消除语序错误（"I have been" vs "I been have" 现在正确定位）
+- LLM 增强：DeepSeek V4 Flash 低置信度区间判断（40-80分），temperature=0 + json_object 保证稳定输出
+- 成本：算法匹配 $0/次，LLM 仅触发约30%请求，估算 ¥0.9/万次
+
+### 竞品调研总结
+
+- 市场定位：微信小程序 + 纯跟读闭环 = 蓝海（响猫是唯一小程序竞品但做AI对话，不是跟读）
+- 核心差异：3种模式+错题本+测评引导，竞品没有同等组合
+- 词级反馈：ELSA/可栗/咕噜做到音素级，我们做词级是最低标准，后续可接讯飞语音评测API升到音素级
+- 进阶路线：影子模式（同时跟读）> 智能暂停VAD > 回述模式 > 8阶段间隔复习 > 语境窗口 > 语调波形
+
 ## [2.5.0] — 2026-06-02
 
 ### 新增

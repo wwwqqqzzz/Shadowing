@@ -53,3 +53,6 @@ backend/uploads/
 *.wav
 *.mp4
 !miniprogram/mock/audio/*.mp3
+# Environment variables
+.env
+.env.*

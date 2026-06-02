@@ -87,11 +87,23 @@
 
   <!-- Feedback -->
   <view class="feedback-area" wx:if="{{showFeedback && feedback && status !== 'finished'}}">
-    <view class="feedback-row">
-      <text class="feedback-score {{feedback.score >= 80 ? 'score-high' : (feedback.score >= 60 ? 'score-mid' : 'score-low')}}">{{feedback.score}}</text>
+    <view class="feedback-score-row">
+      <text class="feedback-score-num {{feedback.score >= 80 ? 'score-high' : (feedback.score >= 60 ? 'score-mid' : 'score-low')}}">{{feedback.score}}</text>
       <text class="feedback-score-label">分</text>
     </view>
-    <view wx:if="{{feedback.missingWords && feedback.missingWords.length > 0}}" class="feedback-missing-row">
+    <!-- Word-level highlighting -->
+    <view class="feedback-words" wx:if="{{wordDisplayData.length > 0}}">
+      <view
+        wx:for="{{wordDisplayData}}"
+        wx:key="index"
+        class="feedback-word-wrap"
+      >
+        <text class="feedback-word feedback-word-{{item.status}}">{{item.word}}</text>
+        <text wx:if="{{item.status === 'mispronounced' && item.recognized}}" class="feedback-word-hint">→ {{item.recognized}}</text>
+      </view>
+    </view>
+    <!-- Fallback: missing words tags when no word-level data -->
+    <view wx:if="{{wordDisplayData.length === 0 && feedback.missingWords && feedback.missingWords.length > 0}}" class="feedback-missing-row">
       <text class="feedback-missing-label">漏读</text>
       <view class="feedback-missing-tags">
         <text wx:for="{{feedback.missingWords}}" wx:key="*this" class="feedback-missing-tag">{{item}}</text>

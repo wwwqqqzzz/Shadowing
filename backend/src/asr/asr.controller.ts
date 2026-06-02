@@ -34,7 +34,7 @@ export class AsrController {
           sentenceText = sentence.text;
         }
       } catch {
-        // mock ID 不是合法 UUID，PostgreSQL 会抛异常，用前端传的原文即可
+        // mock ID is not a valid UUID, PostgreSQL throws, fallback to frontend text
       }
     }
     if (!sentenceText) {
@@ -47,26 +47,45 @@ export class AsrController {
       language,
     );
 
-    const comparison = this.asrService.compare(sentenceText, recognizedText);
+    const algorithmicResult = this.asrService.compare(sentenceText, recognizedText);
+
+    let finalResult = algorithmicResult;
+    let llmUsed = false;
+
+    // Use LLM for ambiguous scores (40-80) where word-level nuance matters
+    if (algorithmicResult.score >= 40 && algorithmicResult.score <= 80) {
+      const llmResult = await this.asrService.evaluateWithLLM(
+        sentenceText,
+        recognizedText,
+        algorithmicResult,
+      );
+      if (llmResult) {
+        finalResult = {
+          ...algorithmicResult,
+          wordResults: llmResult.wordResults,
+          score: llmResult.score,
+        };
+        llmUsed = true;
+      }
+    }
 
     if (sentenceId) {
       try {
         const record = await this.recordsService.findBySentence(sentenceId);
         if (record) {
           await this.recordsService.updateFeedback(record.id, {
-            score: comparison.score,
-            errorWords: comparison.missingWords.join(','),
+            score: finalResult.score,
+            errorWords: finalResult.missingWords.join(','),
           });
         }
       } catch {
-        // 静默：保存评分失败不影响反馈显示
+        // silent: feedback save failure does not block response
       }
     }
 
     return {
-      recognizedText,
-      originalText: sentenceText,
-      ...comparison,
+      ...finalResult,
+      llmUsed,
     };
   }
 }
