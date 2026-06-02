@@ -322,10 +322,28 @@ def update_wordtimings_only(material_id: str, sentences: list[dict], conn_params
         conn.close()
 
 
+def fetch_sentences_from_db(material_id: str, conn_params: dict) -> list[dict]:
+    import psycopg2
+    conn = psycopg2.connect(**conn_params)
+    cur = conn.cursor()
+    cur.execute(
+        'SELECT "order", text FROM sentence WHERE "materialId" = %s ORDER BY "order"',
+        (material_id,),
+    )
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    sentences = []
+    for order, text in rows:
+        sentences.append({'order': order, 'text': text, 'startTime': 0, 'endTime': 0})
+    return sentences
+
+
 def main():
     parser = argparse.ArgumentParser(description='Align sentences to audio using Whisper ASR')
     parser.add_argument('--audio', required=True, help='Path to audio file (mp3/wav)')
-    parser.add_argument('--vtt', required=True, help='Path to VTT subtitle file')
+    parser.add_argument('--vtt', help='Path to VTT subtitle file (required unless --from-db)')
+    parser.add_argument('--from-db', action='store_true', help='Read target sentences from database instead of VTT')
     parser.add_argument('--model', default='base', help='Whisper model size (tiny/base/small/medium/large)')
     parser.add_argument('--offset', type=float, default=0, help='Audio offset in seconds (e.g., -1.5 or 3.0)')
     parser.add_argument('--min-duration', type=int, default=2500, help='Min sentence duration in ms (default: 2500)')
@@ -337,31 +355,46 @@ def main():
 
     args = parser.parse_args()
 
-    # Validate
+    conn_params = {
+        'host': os.environ.get('DATABASE_HOST', 'localhost'),
+        'port': int(os.environ.get('DATABASE_PORT', '5432')),
+        'user': os.environ.get('DATABASE_USER', 'wang'),
+        'password': os.environ.get('DATABASE_PASS', ''),
+        'dbname': os.environ.get('DATABASE_NAME', 'shadowing_dev'),
+    }
+
     if not os.path.exists(args.audio):
         print(f'Error: audio file not found: {args.audio}', file=sys.stderr)
         sys.exit(1)
-    if not os.path.exists(args.vtt):
-        print(f'Error: VTT file not found: {args.vtt}', file=sys.stderr)
-        sys.exit(1)
 
-    # Step 1: Parse VTT to get target sentences
-    print(f'[1/4] Parsing VTT: {args.vtt}')
-    raw_cues = parse_vtt(args.vtt)
-    print(f'  Raw cues: {len(raw_cues)}')
+    if args.from_db:
+        if not args.material_id:
+            print('Error: --material-id required with --from-db', file=sys.stderr)
+            sys.exit(1)
+        print('[1/4] Fetching sentences from database...')
+        target_sentences = fetch_sentences_from_db(args.material_id, conn_params)
+        print(f'  Found {len(target_sentences)} sentences in DB')
+    else:
+        if not args.vtt:
+            print('Error: --vtt required unless using --from-db', file=sys.stderr)
+            sys.exit(1)
+        if not os.path.exists(args.vtt):
+            print(f'Error: VTT file not found: {args.vtt}', file=sys.stderr)
+            sys.exit(1)
 
-    target_sentences = merge_cues(raw_cues, min_duration_ms=args.min_duration, max_duration_ms=args.max_duration)
-    print(f'  Merged sentences: {len(target_sentences)}')
+        print(f'[1/4] Parsing VTT: {args.vtt}')
+        raw_cues = parse_vtt(args.vtt)
+        print(f'  Raw cues: {len(raw_cues)}')
 
-    # Print target sentences for reference
+        target_sentences = merge_cues(raw_cues, min_duration_ms=args.min_duration, max_duration_ms=args.max_duration)
+        print(f'  Merged sentences: {len(target_sentences)}')
+
     for i, s in enumerate(target_sentences[:5]):
-        dur = (s['endTime'] - s['startTime']) / 1000
         text_short = s['text'][:60] + '...' if len(s['text']) > 60 else s['text']
-        print(f'  Target {i+1}: [{s["startTime"]}ms-{s["endTime"]}ms] ({dur:.1f}s) {text_short}')
+        print(f'  Target {i+1}: {text_short}')
     if len(target_sentences) > 5:
         print(f'  ... and {len(target_sentences) - 5} more')
 
-    # Step 2: Run Whisper ASR with word-level timestamps
     print(f'\n[2/4] Running Whisper ({args.model}) on: {args.audio}')
     model = whisper.load_model(args.model)
     result = model.transcribe(
@@ -384,7 +417,6 @@ def main():
         text_short = seg['text'][:60] + '...' if len(seg['text']) > 60 else seg['text']
         print(f'  Whisper {i+1}: [{seg["start"]:.3f}s-{seg["end"]:.3f}s] {text_short}')
 
-    # Step 3: Align sentences via fuzzy matching
     print(f'\n[3/4] Aligning {len(target_sentences)} sentences to {len(whisper_segments)} whisper segments...')
     aligned = align_sentences(whisper_segments, target_sentences)
     print(f'  Aligned: {len(aligned)} sentences')
@@ -414,13 +446,6 @@ def main():
         if not args.material_id:
             print('Error: --material-id required with --update-wordtimings', file=sys.stderr)
             sys.exit(1)
-        conn_params = {
-            'host': os.environ.get('DATABASE_HOST', 'localhost'),
-            'port': int(os.environ.get('DATABASE_PORT', '5432')),
-            'user': os.environ.get('DATABASE_USER', 'wang'),
-            'password': os.environ.get('DATABASE_PASS', ''),
-            'dbname': os.environ.get('DATABASE_NAME', 'shadowing_dev'),
-        }
         update_wordtimings_only(args.material_id, aligned, conn_params)
     elif args.output:
         with open(args.output, 'w', encoding='utf-8') as f:
