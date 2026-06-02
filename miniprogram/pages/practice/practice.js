@@ -293,6 +293,7 @@ Page({
       this.setData({ playing: true, currentIndex: index, status: 'playing', currentWords, currentWordIndex: -1 })
       this._currentWordTimings = wordTimings
       this._startWordHighlight(sentence.startTime, offsetMs)
+      this._prefetchPronunciations(currentWords)
     }
 
     if (sentence.audioUrl) {
@@ -349,6 +350,7 @@ Page({
       this.setData({ playing: true, currentIndex: index, status: 'playing', currentWords, currentWordIndex: -1 })
       this._currentWordTimings = wordTimings
       this._startWordHighlight(sentence.startTime, offsetMs)
+      this._prefetchPronunciations(currentWords)
     }
   },
 
@@ -697,5 +699,15 @@ Page({
         this.setData({ pronouncingWord: '', pronouncingIpa: '' })
       }, 1500)
     }
+  },
+
+  _prefetchPronunciations(currentWords) {
+    const uncached = currentWords.filter(w => !this._pronounceCache[w.word])
+    if (uncached.length === 0) return
+    uncached.forEach(w => {
+      getPronounce(w.word).then(result => {
+        this._pronounceCache[w.word] = result
+      }).catch(() => {})
+    })
   },
 })
