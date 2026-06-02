@@ -34,6 +34,9 @@ export class Sentence {
   @Column({ nullable: true })
   audioUrl: string;
 
+  @Column({ type: 'simple-json', nullable: true })
+  wordTimings: { word: string; start: number; end: number }[];
+
   @OneToMany(() => PracticeRecord, (record) => record.sentence)
   practiceRecords: PracticeRecord[];
 }

@@ -56,7 +56,22 @@
         data-index="{{index}}"
         catchtap="onTapSentence"
       >
-        <text class="subtitle-text">{{item.text}}</text>
+        <!-- Active sentence: word-level rendering with highlight + longpress -->
+        <view wx:if="{{index === currentIndex && currentWords.length > 0}}" class="word-row">
+          <view
+            wx:for="{{currentWords}}"
+            wx:for-item="cw"
+            wx:key="index"
+            class="word-wrap {{cw.index === currentWordIndex ? 'word-highlight' : ''}} {{pronouncingWord === cw.word ? 'word-pronouncing' : ''}}"
+            data-word="{{cw.word}}"
+            bindlongpress="onLongPressWord"
+          >
+            <text class="word-text">{{cw.word}}</text>
+            <text wx:if="{{pronouncingWord === cw.word && pronouncingIpa}}" class="word-ipa">{{pronouncingIpa}}</text>
+          </view>
+        </view>
+        <!-- Non-active sentences: plain text -->
+        <text wx:else class="subtitle-text">{{item.text}}</text>
         <text class="subtitle-translation" wx:if="{{index === currentIndex && item.translation}}">{{item.translation}}</text>
       </view>
     </scroll-view>

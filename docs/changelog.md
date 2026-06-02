@@ -10,6 +10,17 @@
 - 小程序：WXSS 0.3s transition 动画过渡切换句子时的视觉变化
 - 纯前端实现，零后端改动，零 JS 逻辑改动
 
+#### 逐词渲染 + 实时高亮 + 长按发音 + 词级音标
+- 后端：Sentence 实体新增 `wordTimings` JSON 列（每词 {word, start, end} 毫秒偏移）
+- 后端：新增 `/api/pronounce/:word` 公开接口 — 代理 Free Dictionary API，返回 IPA 音标+发音音频 URL，内存缓存
+- 后端：新 PronounceModule（controller + service + module）注册到 AppModule
+- 对齐脚本：`align_sentences.py` 提取 Whisper word_timestamps 写入 wordTimings 字段
+- 小程序：练习页当前句逐词渲染（`<view wx:for="currentWords">`），每词可 `bindlongpress`
+- 小程序：100ms 轮询追踪 `currentWordIndex`，当前词品牌色底色高亮（`.word-highlight`）
+- 小程序：长按单词 → 调用 /pronounce/:word → 播放真人发音 + 显示 IPA 音标
+- 小程序：发音缓存（`_pronounceCache`）避免重复请求
+- 小程序：api.js 新增 `getPronounce`
+
 ## [2.6.0] — 2026-06-02
 
 ### 新增

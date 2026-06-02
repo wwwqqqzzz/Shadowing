@@ -66,6 +66,9 @@ const submitAssessment = (data) =>
 const getAssessmentProfile = () =>
   request({ url: '/assessment/profile' })
 
+const getPronounce = (word) =>
+  request({ url: `/pronounce/${encodeURIComponent(word)}` })
+
 module.exports = {
   getMaterials, getMaterial, getSentences,
   createPracticeRecord,
@@ -74,4 +77,5 @@ module.exports = {
   getLastProgress, saveProgress, getProgress,
   addFavorite, removeFavorite, getMyFavorites,
   getAssessmentSentences, submitAssessment, getAssessmentProfile,
+  getPronounce,
 }

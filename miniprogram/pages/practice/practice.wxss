@@ -270,6 +270,50 @@ page {
   font-size: var(--font-size-sm);
 }
 
+/* ─── Word-level rendering (active sentence) ──────────── */
+
+.word-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4rpx 12rpx;
+}
+
+.word-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rpx 4rpx;
+  border-radius: 4rpx;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.word-text {
+  font-size: var(--font-size-lg);
+  color: var(--color-brand);
+  line-height: var(--line-height-loose);
+}
+
+.word-highlight .word-text {
+  background-color: rgba(168, 230, 207, 0.25);
+  transform: scale(1.05);
+  border-radius: 4rpx;
+}
+
+.word-pronouncing {
+  background-color: rgba(168, 230, 207, 0.15);
+}
+
+.word-pronouncing .word-text {
+  border-bottom: 3rpx solid var(--color-brand);
+}
+
+.word-ipa {
+  font-size: 18rpx;
+  color: var(--color-text-tertiary);
+  line-height: 1;
+  margin-top: 2rpx;
+}
+
 /* ─── Status area ─────────────────────────────────────── */
 
 .status-area {

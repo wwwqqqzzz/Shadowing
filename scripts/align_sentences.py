@@ -232,11 +232,19 @@ def align_sentences(segments, target_sentences):
         if best_ratio >= 0.3:
             start_time = round(all_words[best_start]['start'] * 1000)
             end_time = round(all_words[best_end - 1]['end'] * 1000)
+            word_timings = []
+            for w in all_words[best_start:best_end]:
+                word_timings.append({
+                    'word': w['word'],
+                    'start': round(w['start'] * 1000 - start_time),
+                    'end': round(w['end'] * 1000 - start_time),
+                })
             aligned.append({
                 'order': len(aligned) + 1,
                 'text': target['text'],
                 'startTime': start_time,
                 'endTime': end_time,
+                'wordTimings': word_timings,
                 'confidence': round(best_ratio, 3),
             })
             w_idx = best_end
@@ -246,6 +254,7 @@ def align_sentences(segments, target_sentences):
                 'text': target['text'],
                 'startTime': target_sentences[t_idx]['startTime'],
                 'endTime': target_sentences[t_idx]['endTime'],
+                'wordTimings': None,
                 'confidence': round(best_ratio, 3),
             })
 
@@ -370,10 +379,11 @@ def update_database(material_id: str, sentences: list[dict], material_info: dict
 
         # Insert new sentences
         for s in sentences:
+            wt_json = json.dumps(s.get('wordTimings')) if s.get('wordTimings') else None
             cur.execute(
-                '''INSERT INTO sentence ("order", "startTime", "endTime", "text", "materialId")
-                   VALUES (%s, %s, %s, %s, %s)''',
-                (s['order'], s['startTime'], s['endTime'], s['text'], material_id),
+                '''INSERT INTO sentence ("order", "startTime", "endTime", "text", "materialId", "wordTimings")
+                   VALUES (%s, %s, %s, %s, %s, %s)''',
+                (s['order'], s['startTime'], s['endTime'], s['text'], material_id, wt_json),
             )
         print(f'  Inserted {len(sentences)} sentences')
 

@@ -1,5 +1,5 @@
 const { getMockMaterial } = require('../../mock/data')
-const { getMaterial, getSentences, createPracticeRecord, saveProgress } = require('../../utils/api')
+const { getMaterial, getSentences, createPracticeRecord, saveProgress, getPronounce } = require('../../utils/api')
 const { isLoggedIn, login } = require('../../utils/auth')
 const { formatDuration } = require('../../utils/format')
 
@@ -28,6 +28,10 @@ Page({
     finishedData: null,
     waitMs: DEFAULT_WAIT_MS,
     wordDisplayData: [],
+    currentWords: [],
+    currentWordIndex: -1,
+    pronouncingWord: '',
+    pronouncingIpa: '',
     modeModes: [
       { key: 'free', icon: '', name: '自由模式', desc: '播完自动进下一句，不录音，适合通勤听' },
       { key: 'auto', icon: '', name: '自动录音', desc: '播完自动录音评分，适合认真练习' },
@@ -44,6 +48,9 @@ Page({
     this._pausedAt = null
     this._audioCacheKey = Date.now()
     this._autoNextTimer = null
+    this._pronounceCache = {}
+    this._wordHighlightInterval = null
+    this._currentWordTimings = null
     this.setData({ practiceStartTime: Date.now() })
 
     const storedMode = wx.getStorageSync('practiceMode')
@@ -151,6 +158,7 @@ Page({
   _destroyAudio() {
     this._clearSentenceTimer()
     this._clearTimeUpdateInterval()
+    this._clearWordHighlightInterval()
     if (this._currentAudio) {
       this._currentAudio.stop()
       this._currentAudio.destroy()
@@ -280,7 +288,11 @@ Page({
       ac.play()
       this._currentAudio = ac
       this._sentenceStartTime = Date.now()
-      this.setData({ playing: true, currentIndex: index, status: 'playing' })
+      const currentWords = this._splitWords(sentence.text)
+      const wordTimings = sentence.wordTimings || null
+      this.setData({ playing: true, currentIndex: index, status: 'playing', currentWords, currentWordIndex: -1 })
+      this._currentWordTimings = wordTimings
+      this._startWordHighlight(sentence.startTime, offsetMs)
     }
 
     if (sentence.audioUrl) {
@@ -332,7 +344,11 @@ Page({
       ac.play()
       this._currentAudio = ac
       this._sentenceStartTime = Date.now()
-      this.setData({ playing: true, currentIndex: index, status: 'playing' })
+      const currentWords = this._splitWords(sentence.text)
+      const wordTimings = sentence.wordTimings || null
+      this.setData({ playing: true, currentIndex: index, status: 'playing', currentWords, currentWordIndex: -1 })
+      this._currentWordTimings = wordTimings
+      this._startWordHighlight(sentence.startTime, offsetMs)
     }
   },
 
@@ -368,7 +384,7 @@ Page({
     this._clearWait()
     if (this._autoNextTimer) { clearTimeout(this._autoNextTimer); this._autoNextTimer = null }
     if (this._feedbackTimeout) { clearTimeout(this._feedbackTimeout); this._feedbackTimeout = null }
-    this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [] })
+    this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [], currentWords: [], currentWordIndex: -1 })
     this._destroyPlayback()
     const next = this.data.currentIndex + 1
     if (next < this.data.sentences.length) {
@@ -427,7 +443,7 @@ Page({
 
   onTapSentence(e) {
     this._clearWait()
-    this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [] })
+    this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [], currentWords: [], currentWordIndex: -1 })
     this._destroyPlayback()
     const index = Number(e.currentTarget.dataset.index)
     this._playSentence(index)
@@ -435,7 +451,7 @@ Page({
 
   onSkipPrev() {
     this._clearWait()
-    this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [] })
+    this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [], currentWords: [], currentWordIndex: -1 })
     this._destroyAudio()
     this._destroyPlayback()
     const idx = Math.max(0, this.data.currentIndex - 1)
@@ -444,7 +460,7 @@ Page({
 
   onSkipNext() {
     this._clearWait()
-    this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [] })
+    this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [], currentWords: [], currentWordIndex: -1 })
     this._destroyAudio()
     this._destroyPlayback()
     const next = this.data.currentIndex + 1
@@ -597,5 +613,89 @@ Page({
       this._autoNextTimer = null
     }
     this._autoNextTimer = setTimeout(() => { this._goNext() }, delayMs)
+  },
+
+  _splitWords(text) {
+    if (!text) return []
+    return text.split(/\s+/).filter(w => w.length > 0).map((w, i) => ({
+      word: w.replace(/[,.\!?;:'"]/g, ''),
+      original: w,
+      index: i,
+    }))
+  },
+
+  _startWordHighlight(sentenceStartMs, offsetMs) {
+    this._clearWordHighlightInterval()
+    const timings = this._currentWordTimings
+    if (!timings || timings.length === 0) return
+
+    this._wordHighlightInterval = setInterval(() => {
+      if (!this._currentAudio) return
+      try {
+        const currentTimeSec = this._currentAudio.currentTime
+        const currentTimeMs = currentTimeSec * 1000 - (offsetMs || 0) - sentenceStartMs
+        let idx = -1
+        for (let i = 0; i < timings.length; i++) {
+          if (currentTimeMs >= timings[i].start && currentTimeMs <= timings[i].end) {
+            idx = i
+            break
+          }
+        }
+        if (idx !== this.data.currentWordIndex) {
+          this.setData({ currentWordIndex: idx })
+        }
+      } catch (e) { /* ignore */ }
+    }, 100)
+  },
+
+  _clearWordHighlightInterval() {
+    if (this._wordHighlightInterval) {
+      clearInterval(this._wordHighlightInterval)
+      this._wordHighlightInterval = null
+    }
+  },
+
+  onLongPressWord(e) {
+    const word = e.currentTarget.dataset.word
+    if (!word) return
+
+    this.setData({ pronouncingWord: word })
+
+    const cached = this._pronounceCache[word]
+    if (cached) {
+      this._playPronunciation(cached)
+    } else {
+      getPronounce(word).then(result => {
+        this._pronounceCache[word] = result
+        this._playPronunciation(result)
+      }).catch(() => {
+        this.setData({ pronouncingWord: '' })
+      })
+    }
+  },
+
+  _playPronunciation(result) {
+    const word = result.word
+    const ipa = result.ipa || result.ipaAlt || ''
+    this.setData({ pronouncingWord: word, pronouncingIpa: ipa })
+
+    if (result.audioUrl) {
+      const ac = wx.createInnerAudioContext()
+      ac.obeyMuteSwitch = false
+      ac.src = result.audioUrl
+      ac.onEnded(() => {
+        this.setData({ pronouncingWord: '', pronouncingIpa: '' })
+        ac.destroy()
+      })
+      ac.onError(() => {
+        this.setData({ pronouncingWord: '', pronouncingIpa: '' })
+        ac.destroy()
+      })
+      ac.play()
+    } else {
+      setTimeout(() => {
+        this.setData({ pronouncingWord: '', pronouncingIpa: '' })
+      }, 1500)
+    }
   },
 })
