@@ -261,6 +261,67 @@ def align_sentences(segments, target_sentences):
     return aligned
 
 
+def update_wordtimings_only(material_id: str, sentences: list[dict], conn_params: dict):
+    """Update only wordTimings for existing sentences (no delete/reinsert)."""
+    import psycopg2
+
+    conn = psycopg2.connect(**conn_params)
+    conn.autocommit = False
+    cur = conn.cursor()
+
+    try:
+        # Fetch existing sentences for this material
+        cur.execute(
+            'SELECT id, "order", text FROM sentence WHERE "materialId" = %s ORDER BY "order"',
+            (material_id,),
+        )
+        existing = cur.fetchall()
+        if not existing:
+            print(f'  No existing sentences found for material {material_id}', file=sys.stderr)
+            return
+
+        print(f'  Found {len(existing)} existing sentences in DB')
+        print(f'  Have {len(sentences)} aligned sentences from Whisper')
+
+        # Match by order (1-indexed) and update wordTimings
+        # aligned sentences have order starting from 1
+        aligned_by_order = {s['order']: s for s in sentences}
+        updated = 0
+        for row_id, row_order, row_text in existing:
+            if row_order in aligned_by_order:
+                wt = aligned_by_order[row_order].get('wordTimings')
+                wt_json = json.dumps(wt) if wt else None
+                cur.execute(
+                    'UPDATE sentence SET "wordTimings" = %s WHERE id = %s',
+                    (wt_json, row_id),
+                )
+                updated += 1
+            else:
+                # Mark as NULL if no alignment found
+                cur.execute(
+                    'UPDATE sentence SET "wordTimings" = NULL WHERE id = %s',
+                    (row_id,),
+                )
+
+        print(f'  Updated wordTimings for {updated}/{len(existing)} sentences')
+
+        # Also update material durationMs if provided
+        cur.execute(
+            'UPDATE material SET "audioOffsetMs" = 0 WHERE id = %s',
+            (material_id,),
+        )
+
+        conn.commit()
+        print('  Committed to database.')
+    except Exception as e:
+        conn.rollback()
+        print(f'Error updating wordTimings: {e}', file=sys.stderr)
+        sys.exit(1)
+    finally:
+        cur.close()
+        conn.close()
+
+
 def main():
     parser = argparse.ArgumentParser(description='Align sentences to audio using Whisper ASR')
     parser.add_argument('--audio', required=True, help='Path to audio file (mp3/wav)')
@@ -270,8 +331,9 @@ def main():
     parser.add_argument('--min-duration', type=int, default=2500, help='Min sentence duration in ms (default: 2500)')
     parser.add_argument('--max-duration', type=int, default=15000, help='Max sentence duration in ms (default: 15000)')
     parser.add_argument('--output', help='Output JSON file path (default: stdout)')
-    parser.add_argument('--update-db', action='store_true', help='Update database directly')
-    parser.add_argument('--material-id', help='Material ID to update (required with --update-db)')
+    parser.add_argument('--update-db', action='store_true', help='Full update: delete + reinsert sentences (DANGEROUS - loses translations)')
+    parser.add_argument('--update-wordtimings', action='store_true', help='Safe update: only update wordTimings column (preserves existing data)')
+    parser.add_argument('--material-id', help='Material ID to update (required with --update-db or --update-wordtimings)')
 
     args = parser.parse_args()
 
@@ -348,6 +410,18 @@ def main():
             print('Error: --material-id required with --update-db', file=sys.stderr)
             sys.exit(1)
         update_database(args.material_id, aligned, output['material'])
+    elif args.update_wordtimings:
+        if not args.material_id:
+            print('Error: --material-id required with --update-wordtimings', file=sys.stderr)
+            sys.exit(1)
+        conn_params = {
+            'host': os.environ.get('DATABASE_HOST', 'localhost'),
+            'port': int(os.environ.get('DATABASE_PORT', '5432')),
+            'user': os.environ.get('DATABASE_USER', 'wang'),
+            'password': os.environ.get('DATABASE_PASS', ''),
+            'dbname': os.environ.get('DATABASE_NAME', 'shadowing_dev'),
+        }
+        update_wordtimings_only(args.material_id, aligned, conn_params)
     elif args.output:
         with open(args.output, 'w', encoding='utf-8') as f:
             json.dump(output, f, indent=2, ensure_ascii=False)
