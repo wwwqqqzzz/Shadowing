@@ -7,15 +7,17 @@ Page({
     currentStreak: 0,
     todayDone: false,
     wrongCount: 0,
+    recentMaterials: [],
     loading: true,
   },
 
   async onShow() {
     try {
-      const [progress, stats, wrongData] = await Promise.all([
+      const [progress, stats, wrongData, materials] = await Promise.all([
         getLastProgress().catch(() => null),
         getMyStats().catch(() => null),
         getWrongCount().catch(() => ({ count: 0 })),
+        getMaterials({ status: 'published' }).catch(() => []),
       ])
 
       let heroState = 'start'
@@ -25,12 +27,17 @@ Page({
         heroState = 'continue'
       }
 
+      const recentMaterials = materials
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 2)
+
       this.setData({
         heroState,
         lastProgress: progress,
         currentStreak: stats ? stats.currentStreak : 0,
         todayDone: stats ? stats.todayDone : false,
         wrongCount: wrongData ? wrongData.count : 0,
+        recentMaterials,
         loading: false,
       })
     } catch (err) {
@@ -73,5 +80,13 @@ Page({
 
   onTapAllMaterials() {
     wx.switchTab({ url: '/pages/materials/materials' })
+  },
+
+  onTapRecentMaterial(e) {
+    const { id, title } = e.currentTarget.dataset
+    const encodedTitle = encodeURIComponent(title || '')
+    wx.navigateTo({
+      url: `/pages/practice/practice?materialId=${id}&materialTitle=${encodedTitle}`,
+    })
   },
 })

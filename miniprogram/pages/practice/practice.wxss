@@ -229,31 +229,32 @@ page {
 }
 
 .subtitle-item {
-  padding: 16rpx 0;
+  padding: var(--space-2) 0;
 }
 
 .subtitle-text {
   display: block;
-  font-size: 28rpx;
+  font-size: var(--font-size-base);
   color: var(--color-text-primary);
-  line-height: 1.7;
+  line-height: var(--line-height-normal);
   opacity: 0.35;
   transition: opacity 0.3s ease, font-size 0.3s ease;
   word-break: break-word;
 }
 
 .subtitle-item.active .subtitle-text {
-  font-size: 36rpx;
+  font-size: var(--font-size-lg);
   opacity: 1;
   color: var(--color-brand);
+  line-height: var(--line-height-loose);
 }
 
 .subtitle-translation {
   display: block;
-  font-size: 24rpx;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  margin-top: 8rpx;
-  line-height: 1.5;
+  margin-top: 4rpx;
+  line-height: var(--line-height-normal);
 }
 
 /* ─── Status area ─────────────────────────────────────── */
@@ -371,19 +372,20 @@ page {
 .controls {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 40rpx;
-  padding: 16rpx 40rpx 60rpx;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4) 60rpx;
+  background: var(--color-bg-surface);
+  border-top: 1rpx solid var(--color-border-subtle);
   flex-shrink: 0;
 }
 
 .ctrl-btn {
-  min-width: 80rpx;
-  height: 72rpx;
+  width: 80rpx;
+  height: 80rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 36rpx;
+  border-radius: var(--radius-full);
   background: var(--color-bg-elevated);
 }
 
@@ -391,61 +393,140 @@ page {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.ctrl-btn.play-btn {
-  min-width: 160rpx;
-  height: 88rpx;
-  border-radius: 44rpx;
-  background: var(--color-brand);
+.ctrl-btn-primary {
+  width: 100rpx;
+  height: 100rpx;
+  background: var(--color-brand-dim);
+  color: var(--color-brand);
+  border: 1rpx solid rgba(125, 206, 160, 0.2);
+  border-radius: var(--radius-full);
 }
 
-.ctrl-btn.play-btn:active {
+.ctrl-btn-primary:active {
   opacity: 0.85;
 }
 
 .ctrl-text {
-  font-size: 22rpx;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 
 .play-text {
-  font-size: 28rpx;
+  font-size: var(--font-size-base);
   color: var(--color-bg-base);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .speed-label {
-  font-size: 24rpx;
+  font-size: var(--font-size-sm);
   color: var(--color-brand);
-  font-weight: 500;
+  font-weight: var(--font-weight-semibold);
 }
 
-.loop-on {
+.ctrl-btn.active {
+  color: var(--color-brand);
   background: var(--color-brand-dim);
-}
-
-.loop-on .ctrl-text {
-  color: var(--color-brand);
 }
 
 /* ─── Feedback ────────────────────────────────────────── */
 
+.feedback-wrap {
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1rpx solid var(--color-border-subtle);
+  padding: var(--space-3) var(--space-4);
+  margin: 0 var(--space-4) var(--space-3);
+  flex-shrink: 0;
+}
+
+.feedback-score-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.feedback-score-num {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+}
+
+.feedback-score-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.feedback-missing-row {
+  margin-bottom: var(--space-2);
+}
+
+.feedback-missing-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-bottom: 6rpx;
+  display: block;
+}
+
+.feedback-missing-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.feedback-missing-tag {
+  font-size: var(--font-size-xs);
+  color: var(--color-score-low);
+  background: rgba(192, 97, 107, 0.12);
+  border: 1rpx solid rgba(192, 97, 107, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 4rpx var(--space-2);
+}
+
+.feedback-text-row {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1rpx solid var(--color-border-subtle);
+}
+
+.feedback-text-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.feedback-text-content {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+  display: block;
+}
+
+.feedback-text-original {
+  color: var(--color-text-primary);
+}
+
+/* ─── Legacy feedback classes (kept for backward compat) ─── */
+
 .feedback-area {
-  background: var(--color-bg-elevated);
-  border-radius: 24rpx;
-  padding: 24rpx 32rpx;
-  margin: 0 32rpx 24rpx;
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1rpx solid var(--color-border-subtle);
+  padding: var(--space-3) var(--space-4);
+  margin: 0 var(--space-4) var(--space-3);
   flex-shrink: 0;
 }
 
 .feedback-row {
   display: flex;
   align-items: center;
-  gap: 24rpx;
+  gap: var(--space-3);
 }
 
 .feedback-score {
-  font-size: 72rpx;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
   line-height: 1;
 }
 
@@ -464,33 +545,36 @@ page {
 .feedback-words {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
+  gap: var(--space-1);
 }
 
 .missing-tag {
-  background: var(--color-error);
+  background: rgba(192, 97, 107, 0.12);
   color: var(--color-score-low);
-  font-size: 22rpx;
-  border-radius: 8rpx;
+  font-size: var(--font-size-xs);
+  border: 1rpx solid rgba(192, 97, 107, 0.25);
+  border-radius: var(--radius-sm);
   padding: 4rpx 12rpx;
-  line-height: 1.5;
+  line-height: var(--line-height-normal);
 }
 
 .feedback-texts {
   display: flex;
   flex-direction: column;
   gap: 8rpx;
-  margin-top: 20rpx;
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1rpx solid var(--color-border-subtle);
 }
 
 .feedback-recognized {
-  font-size: 24rpx;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  line-height: 1.6;
+  line-height: var(--line-height-normal);
 }
 
 .feedback-original {
-  font-size: 24rpx;
+  font-size: var(--font-size-sm);
   color: var(--color-text-primary);
-  line-height: 1.6;
+  line-height: var(--line-height-normal);
 }

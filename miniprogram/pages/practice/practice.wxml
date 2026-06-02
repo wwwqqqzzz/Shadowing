@@ -89,8 +89,12 @@
   <view class="feedback-area" wx:if="{{showFeedback && feedback && status !== 'finished'}}">
     <view class="feedback-row">
       <text class="feedback-score {{feedback.score >= 80 ? 'score-high' : (feedback.score >= 60 ? 'score-mid' : 'score-low')}}">{{feedback.score}}</text>
-      <view class="feedback-words" wx:if="{{feedback.missingWords && feedback.missingWords.length > 0}}">
-        <text wx:for="{{feedback.missingWords}}" wx:key="*this" class="missing-tag">{{item}}</text>
+      <text class="feedback-score-label">分</text>
+    </view>
+    <view wx:if="{{feedback.missingWords && feedback.missingWords.length > 0}}" class="feedback-missing-row">
+      <text class="feedback-missing-label">漏读</text>
+      <view class="feedback-missing-tags">
+        <text wx:for="{{feedback.missingWords}}" wx:key="*this" class="feedback-missing-tag">{{item}}</text>
       </view>
     </view>
     <view class="feedback-texts">
@@ -107,14 +111,14 @@
     <view class="ctrl-btn" bindtap="onSkipPrev">
       <text class="ctrl-text">上一句</text>
     </view>
-    <view class="ctrl-btn play-btn" bindtap="onTogglePlay">
+    <view class="ctrl-btn ctrl-btn-primary" bindtap="onTogglePlay">
       <text class="play-text">{{playing ? '暂停' : '播放'}}</text>
     </view>
     <view class="ctrl-btn" bindtap="onSkipNext">
       <text class="ctrl-text">下一句</text>
     </view>
-    <view class="ctrl-btn {{loop ? 'loop-on' : ''}}" bindtap="onLoop">
-      <text class="ctrl-text loop-text">{{loop ? '循环' : '单次'}}</text>
+    <view class="ctrl-btn {{loop ? 'active' : ''}}" bindtap="onLoop">
+      <text class="ctrl-text">{{loop ? '循环' : '单次'}}</text>
     </view>
   </view>
 </view>

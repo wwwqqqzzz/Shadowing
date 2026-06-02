@@ -7,6 +7,7 @@ Page({
     materials: [],
     filtered: [],
     loading: true,
+    filterExpanded: false,
     filters: {
       accent: '',
       level: '',
@@ -94,10 +95,10 @@ Page({
 
   onToggleSearch() {
     this.setData({ showSearch: !this.data.showSearch })
-    if (!this.data.showSearch) {
-      this.setData({ searchKeyword: '' })
-      this.applyFilters()
-    }
+  },
+
+  onToggleFilter() {
+    this.setData({ filterExpanded: !this.data.filterExpanded })
   },
 
   onSearchInput(e) {

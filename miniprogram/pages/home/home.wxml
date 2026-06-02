@@ -33,7 +33,7 @@
           <text class="hero-meta-sep">·</text>
           <text class="hero-meta-item">{{lastProgress.lastSentenceOrder}} / {{lastProgress.totalSentences}}</text>
         </view>
-        <view class="hero-progress-bar">
+        <view class="hero-progress-track">
           <view class="hero-progress-fill" style="width: {{lastProgress.progressPercent}}%"></view>
         </view>
       </block>
@@ -69,21 +69,36 @@
     <!-- 区域四：难度快速入口 -->
     <view class="quick-section">
       <text class="quick-title">按难度浏览</text>
-      <view class="quick-grid">
-        <view class="quick-card" data-level="beginner" bindtap="onTapLevelFilter" hover-class="quick-card-tap">
-          <text class="quick-card-level">初级</text>
-          <text class="quick-card-hint">基础跟读</text>
+      <view class="level-grid">
+        <view class="level-card beginner" data-level="beginner" bindtap="onTapLevelFilter" hover-class="level-card-tap">
+          <text class="level-card-title">初级</text>
         </view>
-        <view class="quick-card" data-level="intermediate" bindtap="onTapLevelFilter" hover-class="quick-card-tap">
-          <text class="quick-card-level">中级</text>
-          <text class="quick-card-hint">进阶训练</text>
+        <view class="level-card intermediate" data-level="intermediate" bindtap="onTapLevelFilter" hover-class="level-card-tap">
+          <text class="level-card-title">中级</text>
         </view>
-        <view class="quick-card" data-level="advanced" bindtap="onTapLevelFilter" hover-class="quick-card-tap">
-          <text class="quick-card-level">高级</text>
-          <text class="quick-card-hint">挑战流利</text>
+        <view class="level-card advanced" data-level="advanced" bindtap="onTapLevelFilter" hover-class="level-card-tap">
+          <text class="level-card-title">高级</text>
         </view>
       </view>
       <view class="quick-all" bindtap="onTapAllMaterials">查看全部素材 ›</view>
+    </view>
+
+    <!-- 区域五：最近加入 -->
+    <view wx:if="{{recentMaterials.length > 0}}" class="section">
+      <text class="section-title">最近加入</text>
+      <view
+        wx:for="{{recentMaterials}}"
+        wx:key="id"
+        class="recent-material-item"
+        data-id="{{item.id}}"
+        data-title="{{item.title}}"
+        bindtap="onTapRecentMaterial"
+        hover-class="level-card-tap"
+      >
+        <view class="recent-material-dot"></view>
+        <text class="recent-material-title">{{item.title}}</text>
+        <text class="recent-material-meta">{{item.source}}</text>
+      </view>
     </view>
   </block>
 </view>

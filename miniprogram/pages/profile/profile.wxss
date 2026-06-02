@@ -90,39 +90,39 @@ page {
   margin-top: 2rpx;
 }
 
-/* ─── Streak detail ──────────────────────────────────── */
+/* ─── Extra stats ─── */
 
 .extra-row {
   display: flex;
-  gap: 16rpx;
-  padding: 0 32rpx;
-  margin-top: 16rpx;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+  margin-top: var(--space-2);
 }
 
 .extra-item {
-  flex: 1;
-  background: var(--color-bg-elevated);
-  border-radius: 16rpx;
-  padding: 24rpx;
   display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
 }
 
 .extra-label {
-  font-size: 22rpx;
+  font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);
-  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .extra-value {
-  font-size: 28rpx;
+  font-size: var(--font-size-base);
   color: var(--color-text-primary);
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-weight: var(--font-weight-semibold);
+  text-align: right;
+  margin-left: var(--space-3);
+  white-space: normal;
+  word-break: break-all;
 }
 
 /* ─── 7-day heatmap chart ─────────────────────────────── */

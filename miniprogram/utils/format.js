@@ -1,9 +1,9 @@
 const formatDuration = (ms) => {
   if (!ms && ms !== 0) return ''
   const totalSeconds = Math.floor(ms / 1000)
+  if (totalSeconds < 60) return `${totalSeconds}秒`
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
-  if (minutes === 0) return `${(ms / 1000).toFixed(1)}秒`
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
