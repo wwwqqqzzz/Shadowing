@@ -118,6 +118,7 @@ Page({
     this._clearSentenceTimer()
     this._clearTimeUpdateInterval()
     if (this._autoNextTimer) { clearTimeout(this._autoNextTimer); this._autoNextTimer = null }
+    if (this._feedbackTimeout) { clearTimeout(this._feedbackTimeout); this._feedbackTimeout = null }
     this.recorder.stop()
     this._destroyAudio()
     this._destroyPlayback()
@@ -216,7 +217,9 @@ Page({
           if (this.data.recording) {
             this.recorder.stop()
           }
-          setTimeout(() => { this._goNext() }, 1500)
+          // 评分回来后 _evaluateRecords 会触发 _scheduleAutoNext
+          // 兜底：5秒后如果评分没回来，强制下一句
+          this._feedbackTimeout = setTimeout(() => { this._goNext() }, 5000)
         }, recordDuration + 500)
       }, 800)
       return
@@ -363,6 +366,7 @@ Page({
   _goNext() {
     this._clearWait()
     if (this._autoNextTimer) { clearTimeout(this._autoNextTimer); this._autoNextTimer = null }
+    if (this._feedbackTimeout) { clearTimeout(this._feedbackTimeout); this._feedbackTimeout = null }
     this.setData({ recordPath: null, feedback: null, showFeedback: false })
     this._destroyPlayback()
     const next = this.data.currentIndex + 1
@@ -559,10 +563,28 @@ Page({
         if (this.data.practiceMode === 'auto' && result.score != null) {
           this.setData({ sessionScores: [...this.data.sessionScores, result.score] })
         }
+        if (this.data.practiceMode === 'auto') {
+          this._scheduleAutoNext(3000)
+        }
       },
       fail: () => {
         console.warn('评估失败（静默）')
+        if (this.data.practiceMode === 'auto') {
+          this._scheduleAutoNext(1000)
+        }
       },
     })
-  }
+  },
+
+  _scheduleAutoNext(delayMs) {
+    if (this._feedbackTimeout) {
+      clearTimeout(this._feedbackTimeout)
+      this._feedbackTimeout = null
+    }
+    if (this._autoNextTimer) {
+      clearTimeout(this._autoNextTimer)
+      this._autoNextTimer = null
+    }
+    this._autoNextTimer = setTimeout(() => { this._goNext() }, delayMs)
+  },
 })
