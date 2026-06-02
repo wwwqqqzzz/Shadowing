@@ -45,14 +45,14 @@
     <text class="progress-label">{{currentIndex + 1}} / {{sentences.length}}</text>
   </view>
 
-  <!-- Subtitles -->
+  <!-- Subtitles — context window: active/nearby/dimmed -->
   <view class="subtitle-wrapper" wx:if="{{status !== 'finished'}}">
     <scroll-view class="subtitle-area" scroll-y scroll-into-view="s-{{currentIndex}}" scroll-with-animation bindtap="onTapSubtitleBg">
       <view
         wx:for="{{sentences}}"
         wx:key="id"
         id="s-{{index}}"
-        class="subtitle-item {{index === currentIndex ? 'active' : ''}}"
+        class="subtitle-item {{index === currentIndex ? 'active' : (index === currentIndex - 1 || index === currentIndex + 1) ? 'nearby' : 'dimmed'}}"
         data-index="{{index}}"
         catchtap="onTapSentence"
       >
