@@ -59,6 +59,11 @@ Page({
     this._wordHighlightInterval = null
     this._currentWordTimings = null
     this._pendingShadowSave = false
+    this._pendingNextShadowStart = null
+    this._currentShadowSentence = null
+    this._deferFinishedAfterStop = false
+    this._deferEchoAfterStop = false
+    this._deferAdvanceAfterStop = false
     this._shadowPlaybackCtx = null
     this._shadowPlayQueue = []
     this._shadowShadowStopTimer = null
@@ -82,9 +87,32 @@ Page({
       this.setData({ recording: false, recordPath: res.tempFilePath })
       if (this._pendingShadowSave) {
         this._pendingShadowSave = false
-        this._saveShadowRecording(res.tempFilePath, res.duration)
+        const targetSentence = this._currentShadowSentence
+        this._currentShadowSentence = null
+        this._saveShadowRecording(targetSentence, res.tempFilePath, res.duration)
       } else {
         this._evaluateRecording(res.tempFilePath)
+      }
+      if (this._pendingNextShadowStart) {
+        const next = this._pendingNextShadowStart
+        this._pendingNextShadowStart = null
+        this._startShadowRecording(next.sentence, next.durationMs)
+        return
+      }
+      if (this._deferFinishedAfterStop) {
+        this._deferFinishedAfterStop = false
+        this._goToFinished()
+        return
+      }
+      if (this._deferEchoAfterStop) {
+        this._deferEchoAfterStop = false
+        this._playShadowEchoPlayback()
+        return
+      }
+      if (this._deferAdvanceAfterStop) {
+        this._deferAdvanceAfterStop = false
+        this._goNext()
+        return
       }
     })
     this.recorder.onError((err) => {
@@ -92,7 +120,22 @@ Page({
       this.setData({ recording: false })
       if (this._pendingShadowSave) {
         this._pendingShadowSave = false
-        this._handleShadowRecordError(err)
+        const targetSentence = this._currentShadowSentence
+        this._currentShadowSentence = null
+        this._handleShadowRecordError(targetSentence, err)
+      }
+      if (this._pendingNextShadowStart) {
+        this._pendingNextShadowStart = null
+      }
+      if (this._deferFinishedAfterStop) {
+        this._deferFinishedAfterStop = false
+        this._goToFinished()
+      } else if (this._deferEchoAfterStop) {
+        this._deferEchoAfterStop = false
+        this._playShadowEchoPlayback()
+      } else if (this._deferAdvanceAfterStop) {
+        this._deferAdvanceAfterStop = false
+        this._goNext()
       }
     })
 
@@ -147,6 +190,7 @@ Page({
     this._clearTimeUpdateInterval()
     if (this._autoNextTimer) { clearTimeout(this._autoNextTimer); this._autoNextTimer = null }
     if (this._feedbackTimeout) { clearTimeout(this._feedbackTimeout); this._feedbackTimeout = null }
+    this._clearShadowDeferFlags()
     this._destroyShadowPlayback()
     this._stopCompletePlayback()
     this.recorder.stop()
@@ -486,8 +530,16 @@ Page({
     this._playSentence(index)
   },
 
+  _clearShadowDeferFlags() {
+    this._deferFinishedAfterStop = false
+    this._deferEchoAfterStop = false
+    this._deferAdvanceAfterStop = false
+    this._pendingNextShadowStart = null
+  },
+
   onSkipPrev() {
     this._clearWait()
+    this._clearShadowDeferFlags()
     this._destroyShadowPlayback()
     this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [], currentWords: [], currentWordIndex: -1 })
     this._destroyAudio()
@@ -498,6 +550,7 @@ Page({
 
   onSkipNext() {
     this._clearWait()
+    this._clearShadowDeferFlags()
     this._destroyShadowPlayback()
     this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [], currentWords: [], currentWordIndex: -1 })
     this._destroyAudio()
@@ -524,12 +577,17 @@ Page({
   },
 
   onTapRestart() {
+    this._clearShadowDeferFlags()
+    this._destroyShadowPlayback()
+    this._stopCompletePlayback()
     this.setData({
       currentIndex: 0,
       status: 'idle',
       sessionScores: [],
       practiceStartTime: Date.now(),
       finishedData: null,
+      shadowRecordings: [],
+      echoEnabled: false,
     })
     saveProgress(this.data.materialId, 1, this.data.sentences.length)
     this._playSentence(0)
@@ -543,10 +601,19 @@ Page({
 
   _maybeStartShadowRecording(sentence, durationMs) {
     if (this.data.practiceMode !== 'shadow') return
-    if (this.data.recording) return
+    if (this.data.recording) {
+      this._pendingNextShadowStart = { sentence, durationMs }
+      try { this.recorder.stop() } catch (e) {}
+      return
+    }
+    this._startShadowRecording(sentence, durationMs)
+  },
+
+  _startShadowRecording(sentence, durationMs) {
     const sentenceLen = durationMs || (sentence.endTime - sentence.startTime) || 8000
-    const recordDuration = Math.min(Math.max(sentenceLen + 2000, 3000), 60000)
+    const recordDuration = Math.min(Math.max(sentenceLen, 3000), 60000)
     this._pendingShadowSave = true
+    this._currentShadowSentence = sentence
     try {
       this.recorder.start({
         format: 'mp3',
@@ -557,12 +624,11 @@ Page({
     } catch (e) {
       console.error('[shadow] recorder.start 失败', e)
       this._pendingShadowSave = false
-      this._handleShadowRecordError(e)
+      this._handleShadowRecordError(sentence, e)
     }
   },
 
-  _saveShadowRecording(tempFilePath, durationMs) {
-    const sentence = this.data.sentences[this.data.currentIndex]
+  _saveShadowRecording(sentence, tempFilePath, durationMs) {
     if (!sentence) return
     const cleanedRecordings = this.data.shadowRecordings.filter(
       r => r.sentenceOrder !== sentence.order
@@ -577,8 +643,7 @@ Page({
     console.log('[shadow] saved recording for sentence', sentence.order, 'durationMs=', durationMs)
   },
 
-  _handleShadowRecordError(err) {
-    const sentence = this.data.sentences[this.data.currentIndex]
+  _handleShadowRecordError(sentence, err) {
     if (!sentence) return
     const cleanedRecordings = this.data.shadowRecordings.filter(
       r => r.sentenceOrder !== sentence.order
@@ -597,14 +662,14 @@ Page({
   _handleShadowSentenceEnd() {
     const isLast = this.data.currentIndex >= this.data.sentences.length - 1
     if (isLast) {
-      setTimeout(() => this._goToFinished(), 600)
+      this._deferFinishedAfterStop = true
       return
     }
     if (this.data.echoEnabled) {
-      this._playShadowEchoPlayback()
-    } else {
-      this._goNext()
+      this._deferEchoAfterStop = true
+      return
     }
+    this._deferAdvanceAfterStop = true
   },
 
   _goToFinished() {
