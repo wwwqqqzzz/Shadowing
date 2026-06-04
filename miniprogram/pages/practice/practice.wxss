@@ -213,6 +213,58 @@ page {
   color: var(--color-text-tertiary);
 }
 
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+/* ─── Echo toggle (shadow mode) ─────────────────────────── */
+
+.echo-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  height: 48rpx;
+  padding: 0 18rpx;
+  border-radius: 24rpx;
+  background: var(--color-bg-elevated);
+  border: 1rpx solid var(--color-border-default);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.echo-toggle.echo-on {
+  background: var(--color-brand-dim);
+  border-color: var(--color-brand);
+}
+
+.echo-toggle-tap {
+  opacity: 0.7;
+}
+
+.echo-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: var(--color-text-tertiary);
+  transition: background-color 0.2s ease;
+}
+
+.echo-dot.echo-dot-on {
+  background: var(--color-brand);
+  box-shadow: 0 0 8rpx rgba(125, 206, 160, 0.6);
+}
+
+.echo-label {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.echo-toggle.echo-on .echo-label {
+  color: var(--color-brand);
+}
+
 /* ─── Subtitle area — context window ───────────────────── */
 
 .subtitle-wrapper {
@@ -699,4 +751,69 @@ page {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   line-height: 1;
+}
+
+/* ─── Shadow mode finished page ─────────────────────────── */
+
+.finished-stat-shadow {
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+}
+
+.finished-shadow-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  width: 100%;
+  margin-bottom: 40rpx;
+}
+
+.btn-shadow-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  padding: 24rpx 0;
+  width: 100%;
+}
+
+.btn-shadow-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  border: 1rpx solid var(--color-border-default);
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  padding: 22rpx 0;
+  width: 100%;
+}
+
+.btn-shadow-text {
+  font-size: inherit;
+  color: inherit;
+}
+
+.finished-shadow-progress {
+  margin-bottom: 24rpx;
+}
+
+.finished-shadow-progress-text {
+  font-size: 24rpx;
+  color: var(--color-brand);
+  letter-spacing: 2rpx;
+}
+
+/* ─── Recording pulse (shadow mode indicator) ──────────── */
+
+.recording-label {
+  font-size: 26rpx;
+  color: var(--color-recording);
+  letter-spacing: 2rpx;
+  animation: recPulse 1.4s ease-in-out infinite;
 }

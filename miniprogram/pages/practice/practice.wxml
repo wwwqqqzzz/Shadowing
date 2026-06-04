@@ -32,6 +32,21 @@
     <view class="finished-stats">
       <text class="finished-stat-main">{{finishedData.total}} 句  ·  {{finishedData.durationText}}</text>
       <text wx:if="{{finishedData.showScore}}" class="finished-stat-score">平均 {{finishedData.avgScore}} 分</text>
+      <text wx:if="{{finishedData.shadowMode}}" class="finished-stat-shadow">跟读 {{finishedData.shadowWithAudio}} / {{finishedData.shadowTotal}} 句</text>
+    </view>
+    <view wx:if="{{finishedData.shadowMode}}" class="finished-shadow-buttons">
+      <view class="btn-shadow-primary" bindtap="_playCompleteShadow" hover-class="btn-tap" wx:if="{{!shadowCompletePlaying}}">
+        <text class="btn-shadow-text">听我的跟读</text>
+      </view>
+      <view class="btn-shadow-primary" bindtap="onStopCompletePlayback" hover-class="btn-tap" wx:if="{{shadowCompletePlaying}}">
+        <text class="btn-shadow-text">停止回放</text>
+      </view>
+      <view class="btn-shadow-secondary" bindtap="_playCompleteOriginal" hover-class="btn-tap" wx:if="{{!shadowCompletePlaying}}">
+        <text class="btn-shadow-text">再听原音</text>
+      </view>
+    </view>
+    <view wx:if="{{shadowCompletePlaying && shadowCompleteSource === 'self'}}" class="finished-shadow-progress">
+      <text class="finished-shadow-progress-text">回放中 {{shadowPlayIndex + 1}} / {{finishedData.shadowWithAudio}}</text>
     </view>
     <view class="finished-buttons">
       <view class="btn-restart" bindtap="onTapRestart" hover-class="btn-tap">重新练</view>
@@ -39,10 +54,16 @@
     </view>
   </view>
 
-  <!-- Top bar: title + progress -->
+  <!-- Top bar: title + progress + echo toggle (shadow mode) -->
   <view class="top-bar" wx:if="{{status !== 'finished'}}">
     <text class="title-text">{{material.title}}</text>
-    <text class="progress-label">{{currentIndex + 1}} / {{sentences.length}}</text>
+    <view class="top-bar-right">
+      <view wx:if="{{practiceMode === 'shadow'}}" class="echo-toggle {{echoEnabled ? 'echo-on' : ''}}" bindtap="onToggleEcho" hover-class="echo-toggle-tap">
+        <view class="echo-dot {{echoEnabled ? 'echo-dot-on' : ''}}"></view>
+        <text class="echo-label">回声</text>
+      </view>
+      <text class="progress-label">{{currentIndex + 1}} / {{sentences.length}}</text>
+    </view>
   </view>
 
   <!-- Subtitles — context window: active/nearby/dimmed -->
@@ -80,22 +101,26 @@
 
   <!-- Wait indicator -->
   <view class="status-area" wx:if="{{status !== 'finished'}}">
-    <view wx:if="{{status === 'waiting' || recording}}" class="waiting-container">
-      <view class="wait-dots" wx:if="{{!recording}}">
+    <view wx:if="{{status === 'waiting' || recording || (practiceMode === 'shadow' && playingBack && shadowCompleteSource !== 'original')}}" class="waiting-container">
+      <view class="wait-dots" wx:if="{{!recording && !(practiceMode === 'shadow' && playingBack)}}">
         <view class="wait-dot"></view>
         <view class="wait-dot"></view>
         <view class="wait-dot"></view>
       </view>
-      <text class="recording-label" wx:if="{{recording}}">录音中…</text>
+      <text class="recording-label" wx:if="{{recording}}">跟读中…</text>
+      <text class="recording-label" wx:if="{{!recording && practiceMode === 'shadow' && playingBack}}">回放中…</text>
       <view class="recorder-row">
-        <view class="rec-btn {{recording ? 'recording' : ''}}" bindtap="onToggleRecord">
+        <view class="rec-btn {{recording ? 'recording' : ''}}" bindtap="onToggleRecord" wx:if="{{practiceMode !== 'shadow'}}">
           <text class="rec-label">{{recording ? '停止' : '录音'}}</text>
         </view>
-        <view class="rec-btn" wx:if="{{recordPath && !recording}}" bindtap="onPlayback">
+        <view class="rec-btn" wx:if="{{recordPath && !recording && practiceMode !== 'shadow'}}" bindtap="onPlayback">
           <text class="rec-label">回放</text>
         </view>
+        <view class="rec-btn" wx:if="{{practiceMode === 'shadow' && playingBack && !shadowCompletePlaying}}" bindtap="onSkipShadowPlayback">
+          <text class="rec-label skip-label">跳过回放</text>
+        </view>
         <view class="rec-btn" bindtap="onSkipNext">
-          <text class="rec-label skip-label">跳过</text>
+          <text class="rec-label skip-label">下一句</text>
         </view>
       </view>
     </view>

@@ -1,5 +1,34 @@
 # Shadowing — 变更日志
 
+## [2.9.0] — 2026-06-04
+
+### 新增
+
+#### 影子跟读模式（Shadow Mode）
+- 4th practice mode — 选 mode 时新增「影子跟读」选项，描述"原音与跟读同时进行，练节奏与流利度，无评分"
+- 小程序：practice.js `_maybeStartShadowRecording()` — 原音开始播放时自动开启录音（duration = 句长+2s, 上限 60s, 下限 3s）
+- 小程序：recorder.onStop 路由分流 — `_pendingShadowSave` 标志位决定走 ASR 评估还是保存到 `shadowRecordings[]`
+- 小程序：按句切片录音 — 每句录完存为独立 tempFile（避免单文件 10min 限制），`shadowRecordings` 数组保存 `{sentenceOrder, filePath, durationMs, hasAudio}`
+- 小程序：`_handleShadowSentenceEnd()` — 句末分支处理，最后一句进完成态，非最后一句：echo=ON 时回放该句录音，echo=OFF 时直接下一句
+- 小程序：完成态扩展 — 影子模式显示 "跟读 X / Y 句" 替代平均分，新增「听我的跟读」「再听原音」「停止回放」三个按钮
+- 小程序：完整回放队列 — `_playCompleteShadow()` 用 N 个 InnerAudioContext 顺序播放（不合成单文件），`_playShadowQueueNext()` 在 onEnded 链式触发
+- 小程序：原音完整回放 — `_playCompleteOriginal()` 用 material.audioUrl + startTime=0 走现有 seek 路径
+- 小程序：录音文件清理 — `onUnload` 时 `_cleanupShadowFiles()` 调 `wx.getFileSystemManager().removeSavedFile()` 删所有 tempFile
+- 小程序：WXML 加回声开关 — sticky 顶部右上的小圆点 toggle（OFF=灰色 / ON=品牌色发光），`onToggleEcho()` 切换
+- 小程序：WXML 跳过回放按钮 — 影子模式 + playingBack 时，状态区显示「跳过回放」按钮
+- 小程序：WXML 完成态新按钮 — 听我的跟读（品牌色填充）/ 再听原音（边框）/ 停止回放（回放中时替换）
+- 小程序：WXSS 加 echo-toggle、btn-shadow-primary、btn-shadow-secondary、finished-shadow-progress、recording-label 脉冲动效
+- 限制：影子模式禁用 onTogglePlay 暂停（toast 提示"影子跟读中不能暂停"），破坏录音连续性
+- 边界：录音 error 时 `_handleShadowRecordError()` 仍写一条 hasAudio=false 的占位 record，保留进度可见
+
+### 改进
+
+- 跟读闭环由"练发音准"扩展到"练节奏+流利度" — 0 评分压力，0 ASR 依赖，0 强制耳机
+- 不戴耳机也能用 — 原音走扬声器，跟读走麦克风，回声在录音里会污染 ASR 但影子模式不接 ASR 所以无影响
+- 翻译继续显示 — 实用主义优先，保留 wxml 既有 `subtitle-translation` 渲染
+- 进度/统计保留 — 影子模式仍调 `createPracticeRecord()`（score=null）算 streak/天数
+- 速度控制+循环 — 复用现有 SPEEDS 数组 + onLoop toggle，影子模式下可慢速跟读
+
 ## [2.8.0] — 2026-06-04
 
 ### 新增

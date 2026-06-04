@@ -126,6 +126,16 @@ onboarding ──4步──→ practice (推荐素材) 或 materials (tabBar)
 - 个人中心: extra-stats垂直列表，formatDuration秒级显示
 - 数据: source字段人可读名称
 
+### 影子跟读模式 (v2.9.0)
+- 4th practice mode: `practiceMode === 'shadow'`, 选 mode 时显示「影子跟读」选项
+- 原音播放时自动开启录音,按句切片存为 `shadowRecordings[]: [{sentenceOrder, filePath, durationMs, hasAudio}]`
+- 句末行为: 末句→完成态; echo=ON→自动回放该句录音; echo=OFF→直接下一句
+- 完成态: "听我的跟读"(N 个录音顺序队列) / "再听原音"(material.audioUrl seek) / 停止回放
+- UI: sticky 顶部回声开关 (echoEnabled, OFF 灰/ON 品牌色发光), 跳过回放按钮, 完成态新按钮组
+- 限制: 影子模式禁用 onTogglePlay 暂停; 录音 error 写 hasAudio=false 占位 record 保留进度
+- 文件清理: `onUnload` 调 `_cleanupShadowFiles()` 删所有 tempFile (getFileSystemManager.removeSavedFile)
+- 不依赖 ASR (无评分), 不强制耳机 (回声不影响功能)
+
 ## CONVENTIONS
 
 ### 非标准约定

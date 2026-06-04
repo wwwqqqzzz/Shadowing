@@ -32,10 +32,17 @@ Page({
     currentWordIndex: -1,
     pronouncingWord: '',
     pronouncingIpa: '',
+    // ─── Shadow mode state ──────────────────────────────
+    echoEnabled: false,
+    shadowRecordings: [],
+    shadowCompletePlaying: false,
+    shadowCompleteSource: null,
+    shadowPlayIndex: 0,
     modeModes: [
       { key: 'free', icon: '', name: '自由模式', desc: '播完自动进下一句，不录音，适合通勤听' },
       { key: 'auto', icon: '', name: '自动录音', desc: '播完自动录音评分，适合认真练习' },
       { key: 'manual', icon: '', name: '手动模式', desc: '自己控制录音和继续，适合反复练某句' },
+      { key: 'shadow', icon: '', name: '影子跟读', desc: '原音与跟读同时进行，练节奏与流利度，无评分' },
     ]
   },
 
@@ -51,6 +58,10 @@ Page({
     this._pronounceCache = {}
     this._wordHighlightInterval = null
     this._currentWordTimings = null
+    this._pendingShadowSave = false
+    this._shadowPlaybackCtx = null
+    this._shadowPlayQueue = []
+    this._shadowShadowStopTimer = null
     this.setData({ practiceStartTime: Date.now() })
 
     const storedMode = wx.getStorageSync('practiceMode')
@@ -69,11 +80,20 @@ Page({
     })
     this.recorder.onStop((res) => {
       this.setData({ recording: false, recordPath: res.tempFilePath })
-      this._evaluateRecording(res.tempFilePath)
+      if (this._pendingShadowSave) {
+        this._pendingShadowSave = false
+        this._saveShadowRecording(res.tempFilePath, res.duration)
+      } else {
+        this._evaluateRecording(res.tempFilePath)
+      }
     })
     this.recorder.onError((err) => {
       console.error('录音错误', err)
       this.setData({ recording: false })
+      if (this._pendingShadowSave) {
+        this._pendingShadowSave = false
+        this._handleShadowRecordError(err)
+      }
     })
 
     if (!isLoggedIn()) {
@@ -127,9 +147,12 @@ Page({
     this._clearTimeUpdateInterval()
     if (this._autoNextTimer) { clearTimeout(this._autoNextTimer); this._autoNextTimer = null }
     if (this._feedbackTimeout) { clearTimeout(this._feedbackTimeout); this._feedbackTimeout = null }
+    this._destroyShadowPlayback()
+    this._stopCompletePlayback()
     this.recorder.stop()
     this._destroyAudio()
     this._destroyPlayback()
+    this._cleanupShadowFiles()
     this._saveCurrentProgress()
   },
 
@@ -234,6 +257,11 @@ Page({
       return
     }
 
+    if (mode === 'shadow') {
+      this._handleShadowSentenceEnd()
+      return
+    }
+
     this.setData({ status: 'waiting' })
   },
 
@@ -294,6 +322,7 @@ Page({
       this._currentWordTimings = wordTimings
       this._startWordHighlight(sentence.startTime, offsetMs)
       this._prefetchPronunciations(currentWords)
+      this._maybeStartShadowRecording(sentence, durationMs)
     }
 
     if (sentence.audioUrl) {
@@ -351,6 +380,7 @@ Page({
       this._currentWordTimings = wordTimings
       this._startWordHighlight(sentence.startTime, offsetMs)
       this._prefetchPronunciations(currentWords)
+      this._maybeStartShadowRecording(sentence, durationMs)
     }
   },
 
@@ -400,6 +430,11 @@ Page({
     const { status, currentIndex } = this.data
 
     if (status === 'finished') {
+      return
+    }
+
+    if (this.data.practiceMode === 'shadow' && status === 'playing') {
+      wx.showToast({ title: '影子跟读中不能暂停', icon: 'none' })
       return
     }
 
@@ -453,6 +488,7 @@ Page({
 
   onSkipPrev() {
     this._clearWait()
+    this._destroyShadowPlayback()
     this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [], currentWords: [], currentWordIndex: -1 })
     this._destroyAudio()
     this._destroyPlayback()
@@ -462,6 +498,7 @@ Page({
 
   onSkipNext() {
     this._clearWait()
+    this._destroyShadowPlayback()
     this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [], currentWords: [], currentWordIndex: -1 })
     this._destroyAudio()
     this._destroyPlayback()
@@ -500,6 +537,247 @@ Page({
 
   onTapBack() {
     wx.navigateBack()
+  },
+
+  // ─── Shadow mode ────────────────────────────────────────
+
+  _maybeStartShadowRecording(sentence, durationMs) {
+    if (this.data.practiceMode !== 'shadow') return
+    if (this.data.recording) return
+    const sentenceLen = durationMs || (sentence.endTime - sentence.startTime) || 8000
+    const recordDuration = Math.min(Math.max(sentenceLen + 2000, 3000), 60000)
+    this._pendingShadowSave = true
+    try {
+      this.recorder.start({
+        format: 'mp3',
+        sampleRate: 16000,
+        numberOfChannels: 1,
+        duration: recordDuration,
+      })
+    } catch (e) {
+      console.error('[shadow] recorder.start 失败', e)
+      this._pendingShadowSave = false
+      this._handleShadowRecordError(e)
+    }
+  },
+
+  _saveShadowRecording(tempFilePath, durationMs) {
+    const sentence = this.data.sentences[this.data.currentIndex]
+    if (!sentence) return
+    const cleanedRecordings = this.data.shadowRecordings.filter(
+      r => r.sentenceOrder !== sentence.order
+    )
+    const entry = {
+      sentenceOrder: sentence.order,
+      filePath: tempFilePath,
+      durationMs: durationMs || 0,
+      hasAudio: true,
+    }
+    this.setData({ shadowRecordings: [...cleanedRecordings, entry] })
+    console.log('[shadow] saved recording for sentence', sentence.order, 'durationMs=', durationMs)
+  },
+
+  _handleShadowRecordError(err) {
+    const sentence = this.data.sentences[this.data.currentIndex]
+    if (!sentence) return
+    const cleanedRecordings = this.data.shadowRecordings.filter(
+      r => r.sentenceOrder !== sentence.order
+    )
+    this.setData({
+      shadowRecordings: [...cleanedRecordings, {
+        sentenceOrder: sentence.order,
+        filePath: null,
+        durationMs: 0,
+        hasAudio: false,
+      }],
+    })
+    console.warn('[shadow] 录音失败 (sentence', sentence.order, ')', err)
+  },
+
+  _handleShadowSentenceEnd() {
+    const isLast = this.data.currentIndex >= this.data.sentences.length - 1
+    if (isLast) {
+      setTimeout(() => this._goToFinished(), 600)
+      return
+    }
+    if (this.data.echoEnabled) {
+      this._playShadowEchoPlayback()
+    } else {
+      this._goNext()
+    }
+  },
+
+  _goToFinished() {
+    saveProgress(this.data.materialId, 1, this.data.sentences.length)
+    const durationMs = Date.now() - this.data.practiceStartTime
+    const totalRecordings = this.data.shadowRecordings.length
+    const withAudio = this.data.shadowRecordings.filter(r => r.hasAudio).length
+    this.setData({
+      status: 'finished',
+      finishedData: {
+        title: (this.data.material && this.data.material.title) || '',
+        total: this.data.sentences.length,
+        durationText: formatDuration(durationMs),
+        showScore: false,
+        shadowMode: true,
+        shadowRecordings: this.data.shadowRecordings,
+        shadowWithAudio: withAudio,
+        shadowTotal: totalRecordings,
+      },
+    })
+  },
+
+  _playShadowEchoPlayback() {
+    const current = this.data.shadowRecordings.find(
+      r => r.sentenceOrder === this.data.sentences[this.data.currentIndex].order
+    )
+    if (!current || !current.hasAudio || !current.filePath) {
+      this._goNext()
+      return
+    }
+    this._destroyShadowPlayback()
+    const ac = wx.createInnerAudioContext()
+    ac.obeyMuteSwitch = false
+    ac.src = current.filePath
+    ac.onEnded(() => {
+      this._destroyShadowPlayback()
+      this._goNext()
+    })
+    ac.onError((err) => {
+      console.error('[shadow] 回放出错', err)
+      this._destroyShadowPlayback()
+      this._goNext()
+    })
+    this._shadowPlaybackCtx = ac
+    this.setData({ playingBack: true })
+    ac.play()
+  },
+
+  _destroyShadowPlayback() {
+    if (this._shadowPlaybackCtx) {
+      try { this._shadowPlaybackCtx.stop() } catch (e) {}
+      try { this._shadowPlaybackCtx.destroy() } catch (e) {}
+      this._shadowPlaybackCtx = null
+    }
+    this.setData({ playingBack: false })
+  },
+
+  onSkipShadowPlayback() {
+    this._destroyShadowPlayback()
+    this._goNext()
+  },
+
+  onToggleEcho() {
+    if (this.data.shadowCompletePlaying) {
+      wx.showToast({ title: '回放中无法切换', icon: 'none' })
+      return
+    }
+    this.setData({ echoEnabled: !this.data.echoEnabled })
+  },
+
+  _playCompleteShadow() {
+    const valid = this.data.shadowRecordings.filter(r => r.hasAudio && r.filePath)
+    if (valid.length === 0) {
+      wx.showToast({ title: '没有可回放的录音', icon: 'none' })
+      return
+    }
+    this._shadowPlayQueue = valid.map(r => ({ filePath: r.filePath, kind: 'self' }))
+    this.setData({
+      shadowCompletePlaying: true,
+      shadowCompleteSource: 'self',
+      shadowPlayIndex: 0,
+    })
+    this._playShadowQueueNext()
+  },
+
+  _playCompleteOriginal() {
+    if (!this.data.material || !this.data.material.audioUrl) {
+      wx.showToast({ title: '原音不可用', icon: 'none' })
+      return
+    }
+    this._destroyShadowPlayback()
+    this._destroyAudio()
+    const ac = wx.createInnerAudioContext()
+    ac.obeyMuteSwitch = false
+    ac.playbackRate = this.data.speed
+    const resolveUrl = (url) => {
+      if (!url) return null
+      if (url.startsWith('http://') || url.startsWith('https://')) return url
+      if (url.startsWith('wxfile://')) return url
+      if (url.startsWith('/')) return url
+      return 'http://localhost:3000/audio/' + url
+    }
+    const remoteUrl = resolveUrl(this.data.material.audioUrl)
+    ac.src = remoteUrl
+    this._shadowPlaybackCtx = ac
+    this.setData({
+      shadowCompletePlaying: true,
+      shadowCompleteSource: 'original',
+      shadowPlayIndex: 0,
+    })
+    ac.onEnded(() => {
+      this._stopCompletePlayback()
+    })
+    ac.onError((err) => {
+      console.error('[shadow] 原音回放出错', err)
+      this._stopCompletePlayback()
+    })
+    ac.play()
+  },
+
+  _playShadowQueueNext() {
+    if (this._shadowPlayQueue.length === 0) {
+      this._stopCompletePlayback()
+      return
+    }
+    const next = this._shadowPlayQueue.shift()
+    this._destroyShadowPlayback()
+    const ac = wx.createInnerAudioContext()
+    ac.obeyMuteSwitch = false
+    ac.src = next.filePath
+    ac.onEnded(() => {
+      this.setData({ shadowPlayIndex: this.data.shadowPlayIndex + 1 })
+      this._playShadowQueueNext()
+    })
+    ac.onError((err) => {
+      console.error('[shadow] 队列回放出错', err)
+      this.setData({ shadowPlayIndex: this.data.shadowPlayIndex + 1 })
+      this._playShadowQueueNext()
+    })
+    this._shadowPlaybackCtx = ac
+    this.setData({ playingBack: true })
+    ac.play()
+  },
+
+  onStopCompletePlayback() {
+    this._stopCompletePlayback()
+  },
+
+  _stopCompletePlayback() {
+    this._shadowPlayQueue = []
+    this._destroyShadowPlayback()
+    this.setData({
+      shadowCompletePlaying: false,
+      shadowCompleteSource: null,
+      shadowPlayIndex: 0,
+      playingBack: false,
+    })
+  },
+
+  _cleanupShadowFiles() {
+    const paths = this.data.shadowRecordings
+      .filter(r => r.hasAudio && r.filePath)
+      .map(r => r.filePath)
+    if (paths.length === 0) return
+    const fs = wx.getFileSystemManager()
+    paths.forEach(p => {
+      try {
+        fs.removeSavedFile({ filePath: p })
+      } catch (e) {
+        console.warn('[shadow] 清理文件失败', p, e)
+      }
+    })
+    console.log('[shadow] 清理录音文件', paths.length, '个')
   },
 
   // ─── Recording ──────────────────────────────────────────
