@@ -192,6 +192,10 @@ cd backend && npm run lint          # ESLint
 cd asr-service && python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
 # Backend 启动时会自动检测 :8000 (6 retries × 2s)，打印 "✓ reachable" 或 "⚠️ 警告 + 启动命令"
 
+# Shadow mode smoke test (v2.9.0)
+node scripts/test_shadow_mode.js   # 22 assertions — defer flag ordering, queue, onError, recorder-already-stopped race
+# Mocks WeChat globals, does NOT replace WeChat IDE test
+
 # Admin
 cd admin && npm run dev             # Vite开发服务器
 cd admin && npm run build           # 生产构建
