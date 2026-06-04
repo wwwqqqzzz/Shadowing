@@ -6,7 +6,7 @@
 
 #### 影子跟读模式（Shadow Mode）
 - 4th practice mode — 选 mode 时新增「影子跟读」选项，描述"原音与跟读同时进行，练节奏与流利度，无评分"
-- 小程序：practice.js `_maybeStartShadowRecording()` — 原音开始播放时自动开启录音（duration = 句长+2s, 上限 60s, 下限 3s）
+- 小程序：practice.js `_maybeStartShadowRecording()` — 原音开始播放时自动开启录音（duration = 句长, 上限 60s, 下限 3s）
 - 小程序：recorder.onStop 路由分流 — `_pendingShadowSave` 标志位决定走 ASR 评估还是保存到 `shadowRecordings[]`
 - 小程序：按句切片录音 — 每句录完存为独立 tempFile（避免单文件 10min 限制），`shadowRecordings` 数组保存 `{sentenceOrder, filePath, durationMs, hasAudio}`
 - 小程序：`_handleShadowSentenceEnd()` — 句末分支处理，最后一句进完成态，非最后一句：echo=ON 时回放该句录音，echo=OFF 时直接下一句
@@ -28,6 +28,17 @@
 - 翻译继续显示 — 实用主义优先，保留 wxml 既有 `subtitle-translation` 渲染
 - 进度/统计保留 — 影子模式仍调 `createPracticeRecord()`（score=null）算 streak/天数
 - 速度控制+循环 — 复用现有 SPEEDS 数组 + onLoop toggle，影子模式下可慢速跟读
+
+### 修复（v2.9.0 同日 hotfix，commit 8db0293 + e1dad98）
+
+- **录音越界到下一句** — 移除 +2s buffer（recorder duration 改为 = 句长），新增 `_pendingNextShadowStart` 队列 + `_maybeStartShadowRecording` 检查 `data.recording` 排队
+- **echo 播放早于录音保存** — 引入 `_deferEchoAfterStop` 标志位，`recorder.onStop` 完成 save 后才调 `_playShadowEchoPlayback()`
+- **末句 finished 页录音数错** — 引入 `_deferFinishedAfterStop` 标志位，save 完成后才调 `_goToFinished()`
+- **录音归因到错句** — `_saveShadowRecording`/`_handleShadowRecordError` 改为接收显式 `sentence` 参数，新增 `_currentShadowSentence` 快照（onStop 时锁定 recording 时的句号，免疫 currentIndex 变化）
+- **recorder 先于 audio 结束时卡住** — `_handleShadowSentenceEnd` 检查 `!data.recording` 直接调 action，避免设 flag 后没人消费
+- **onError 镜像 onStop flag chain** — 录音出错时也走 defer 路由，用户不会卡在原句
+- **`_clearShadowDeferFlags()` helper** — `onSkipPrev`/`onSkipNext`/`onTapRestart`/`onUnload` 调，导航时清状态
+- **onTapRestart 完整重置** — shadowRecordings=[]、echoEnabled=false、destroy playback、stop complete playback
 
 ## [2.8.0] — 2026-06-04
 
