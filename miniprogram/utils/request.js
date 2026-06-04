@@ -1,4 +1,5 @@
 const BASE_URL = 'http://localhost:3000/api'
+const ASR_PORT = 8000
 
 const request = ({ url, method = 'GET', data = {} }) => {
   return new Promise((resolve, reject) => {
@@ -31,3 +32,6 @@ const request = ({ url, method = 'GET', data = {} }) => {
 }
 
 module.exports = request
+module.exports.request = request
+module.exports.BASE_URL = BASE_URL
+module.exports.ASR_PORT = ASR_PORT

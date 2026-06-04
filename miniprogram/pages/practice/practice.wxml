@@ -103,7 +103,10 @@
 
   <!-- Feedback -->
   <view class="feedback-area" wx:if="{{showFeedback && feedback && status !== 'finished'}}">
-    <view class="feedback-score-row">
+    <view wx:if="{{feedback.evalFailed}}" class="feedback-failed-row">
+      <text class="feedback-failed-text">评估失败，无法给出评分</text>
+    </view>
+    <view wx:else class="feedback-score-row">
       <text class="feedback-score-num {{feedback.score >= 80 ? 'score-high' : (feedback.score >= 60 ? 'score-mid' : 'score-low')}}">{{feedback.score}}</text>
       <text class="feedback-score-label">分</text>
     </view>

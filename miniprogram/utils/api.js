@@ -1,4 +1,4 @@
-const request = require('./request')
+const { request } = require('./request')
 
 const getMaterials = (params = {}) =>
   request({ url: '/materials', data: params })

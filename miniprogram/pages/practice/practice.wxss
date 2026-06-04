@@ -503,6 +503,19 @@ page {
   margin-bottom: var(--space-3);
 }
 
+.feedback-failed-row {
+  padding: var(--space-2) 0;
+  margin-bottom: var(--space-3);
+  border-left: 4rpx solid var(--color-score-low);
+  padding-left: var(--space-3);
+}
+
+.feedback-failed-text {
+  font-size: var(--font-size-base);
+  color: var(--color-score-low);
+  font-weight: var(--font-weight-medium);
+}
+
 .feedback-score-num {
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-semibold);

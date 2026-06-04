@@ -567,8 +567,9 @@ Page({
     const sentence = this.data.sentences[this.data.currentIndex]
     if (!sentence) return
 
+    const { BASE_URL } = require('../../utils/request')
     wx.uploadFile({
-      url: 'http://localhost:3000/api/asr/evaluate',
+      url: `${BASE_URL}/asr/evaluate`,
       filePath: tempFilePath,
       name: 'audio',
       formData: {
@@ -577,7 +578,19 @@ Page({
         originalText: sentence.text,
       },
       success: (res) => {
-        const result = JSON.parse(res.data)
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          console.error('评估接口返回非 2xx', res.statusCode, res.data)
+          this._handleEvalFailure(sentence, `服务器错误 ${res.statusCode}`)
+          return
+        }
+        let result
+        try {
+          result = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
+        } catch (parseErr) {
+          console.error('评估响应 JSON 解析失败', parseErr, res.data)
+          this._handleEvalFailure(sentence, '响应格式错误')
+          return
+        }
         const wordResults = result.wordResults || []
         const wordDisplayData = wordResults.map((w) => ({
           word: w.word,
@@ -596,13 +609,36 @@ Page({
           this._scheduleAutoNext(3000)
         }
       },
-      fail: () => {
-        console.warn('评估失败（静默）')
-        if (this.data.practiceMode === 'auto') {
-          this._scheduleAutoNext(1000)
-        }
+      fail: (err) => {
+        console.error('录音评估网络失败', err)
+        const errMsg = (err && (err.errMsg || err.message)) || '网络异常'
+        this._handleEvalFailure(sentence, errMsg)
       },
     })
+  },
+
+  _handleEvalFailure(sentence, errMsg) {
+    wx.showToast({
+      title: `评估失败：${errMsg}`,
+      icon: 'none',
+      duration: 3000,
+    })
+    this.setData({
+      showFeedback: true,
+      feedback: {
+        score: null,
+        evalFailed: true,
+        errorCount: 0,
+        wordResults: [],
+        missingWords: [],
+        recognizedText: '',
+        originalText: sentence ? sentence.text : '',
+      },
+      wordDisplayData: [],
+    })
+    if (this.data.practiceMode === 'auto') {
+      this._scheduleAutoNext(4000)
+    }
   },
 
   _scheduleAutoNext(delayMs) {
