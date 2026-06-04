@@ -102,7 +102,14 @@ onboarding ──4步──→ practice (推荐素材) 或 materials (tabBar)
 - 接口: POST /admin/materials/:id/align (body: {model, async}, 默认 base + async)
 - 策略: NestJS spawn scripts/align_sentences.py (Whisper base) as child process, --from-db + --update-wordtimings 安全模式
 - 触发: (1) importFromVtt() 保存后自动 fire-and-forget 调用; (2) 手动调用 /admin/materials/:id/align
-- 进度: 1198/1301 句 (92%) 已对齐; 4 个 BBC 素材因 VTT 碎片化停留在 36-45%
+- 进度: 1198/1301 句 (92%) 已对齐; 4 个 BBC 素材停留在 36-45%
+- **8% gap 根因分析** (2026-06-04): 4 个低覆盖素材的失败句子有共同模式
+  - 句子 9-15 段: `Sam Oceans hold sixteen times more carbon...` 形式 (speaker tag 拼接到句首)
+  - 失败句子包含专业词汇 (geoengineering, chock-a-block, geo-chemist names) Whisper 经常改写
+  - 失败句子长度 70-150 字符, 单句太长 max_span=50 滑窗难匹配
+  - **不可代码修复**: 失败由 (1) VTT 解析时漏剥 speaker tag (2) Whisper 转写偏差 (3) 长句匹配窗口不足 三因素叠加
+  - **改进方向**: 若要 100% 覆盖需 (a) 手动修正 DB 中受污染句子 (b) 用 `small`/`medium` 模型重跑 (c) 提高 `max_span` 到 80
+  - **当前策略**: 92% 覆盖率已实用; 失败的句子用 sentence-level 跳词 (无 word highlight) 不影响跟读功能
 
 ### 能力测评系统 (Assessment)
 - 后端: AssessmentSentence entity (a001~a005, 5级), UserProfile entity, assessment模块
