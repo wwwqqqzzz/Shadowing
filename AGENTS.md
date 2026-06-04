@@ -1,6 +1,6 @@
 # Shadowing 影子跟读 — Project Knowledge Base
 
-**Updated:** 2026-06-02
+**Updated:** 2026-06-04
 **Branch:** main
 
 ## OVERVIEW
@@ -164,15 +164,23 @@ onboarding ──4步──→ practice (推荐素材) 或 materials (tabBar)
 | ⚠️ Mac代理 127.0.0.1:7897 | curl需手动设proxy，yt-dlp自动走系统代理 | 所有网络请求 |
 | ⚠️ 句子边界必须 tighten | 不做tighten会导致播放开头空白 | `postprocess_alignment.py` |
 | ⚠️ 收藏409 | addFavorite重复调用会Conflict，已修(本地合并isFavorited) | `materials.js` |
+| ⚠️ NestJS @Post 默认 201 Created | 前端 `!== 200` 会错杀 201，必须 `>= 200 && < 300` | `practice.js:581` |
+| ⚠️ request.js dual-export 必须 verify 所有 import sites | 改了 destructure 必须同时检查 `const X = require()` + `const {X} = require()` 两种模式 | `request.js:34-37` |
 
 ## COMMANDS
 
 ```bash
-# Backend
-cd backend && npm run start:dev    # 开发启动
+# Backend (with full dev stack)
+cd backend && npm run start:full    # 启动 backend + asr-service (color-coded, 一次拉起所有 ASR 依赖)
+cd backend && npm run start:dev     # 只启动 NestJS (无 ASR 评分 — 跟读自动模式会失败)
+cd backend && npm run verify:eval   # 跑 /api/asr/evaluate 契约测试 (验证 practice.js 依赖的响应形状)
 cd backend && npm run test          # 单元测试（暂无spec文件）
 cd backend && npm run test:e2e      # E2E测试
 cd backend && npm run lint          # ESLint
+
+# ASR service (standalone)
+cd asr-service && python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+# Backend 启动时会自动检测 :8000 (6 retries × 2s)，打印 "✓ reachable" 或 "⚠️ 警告 + 启动命令"
 
 # Admin
 cd admin && npm run dev             # Vite开发服务器
