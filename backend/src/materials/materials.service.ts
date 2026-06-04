@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Material } from './entities/material.entity';
 import { Sentence } from '../sentences/entities/sentence.entity';
 import { ProgressService } from '../progress/progress.service';
+import { AlignmentService } from '../alignment/alignment.service';
 import { parseVtt } from './vtt-parser';
 
 export interface MaterialWithCount {
@@ -19,17 +20,24 @@ export interface MaterialWithCount {
   source: string;
   createdAt: Date;
   sentenceCount: number;
-  progress?: { sentenceOrder: number; totalSentences: number; percent: number } | null;
+  progress?: {
+    sentenceOrder: number;
+    totalSentences: number;
+    percent: number;
+  } | null;
 }
 
 @Injectable()
 export class MaterialsService {
+  private readonly logger = new Logger(MaterialsService.name);
+
   constructor(
     @InjectRepository(Material)
     private readonly materialRepo: Repository<Material>,
     @InjectRepository(Sentence)
     private readonly sentenceRepo: Repository<Sentence>,
     private readonly progressService: ProgressService,
+    private readonly alignmentService: AlignmentService,
   ) {}
 
   async findAll(
@@ -60,16 +68,19 @@ export class MaterialsService {
       .addSelect('COUNT(s.id)', 'sentenceCount')
       .addGroupBy('m.id');
 
-    if (query?.language) qb.andWhere('m.language = :language', { language: query.language });
+    if (query?.language)
+      qb.andWhere('m.language = :language', { language: query.language });
     if (query?.level) qb.andWhere('m.level = :level', { level: query.level });
-    if (query?.accent) qb.andWhere('m.accent = :accent', { accent: query.accent });
+    if (query?.accent)
+      qb.andWhere('m.accent = :accent', { accent: query.accent });
     if (query?.status) {
       qb.andWhere('m.status = :status', { status: query.status });
     } else {
       qb.andWhere('m.status = :status', { status: 'published' });
     }
     if (query?.duration === 'short') qb.andWhere('m.durationMs < 300000');
-    if (query?.duration === 'medium') qb.andWhere('m.durationMs BETWEEN 300000 AND 900000');
+    if (query?.duration === 'medium')
+      qb.andWhere('m.durationMs BETWEEN 300000 AND 900000');
     if (query?.duration === 'long') qb.andWhere('m.durationMs >= 900000');
 
     qb.orderBy('m.createdAt', 'DESC');
@@ -94,7 +105,10 @@ export class MaterialsService {
     // merge progress when authenticated
     if (userId) {
       const materialIds = results.map((r) => r.id);
-      const progressMap = await this.progressService.getBatchProgress(userId, materialIds);
+      const progressMap = await this.progressService.getBatchProgress(
+        userId,
+        materialIds,
+      );
       return results.map((r) => ({
         ...r,
         progress: progressMap[r.id] || null,
@@ -159,6 +173,14 @@ export class MaterialsService {
 
     const saved = await this.materialRepo.save(material);
 
+    this.alignmentService
+      .alignMaterial(saved.id, { async: true })
+      .catch((err) =>
+        this.logger.error(
+          `Auto-alignment failed for material ${saved.id}: ${err.message}`,
+        ),
+      );
+
     return {
       materialId: saved.id,
       sentenceCount: saved.sentences.length,
@@ -184,14 +206,22 @@ export class MaterialsService {
     return { id: saved.id, status: saved.status };
   }
 
-  async updateMaterial(id: string, data: { accent?: string; level?: string; status?: string }) {
+  async updateMaterial(
+    id: string,
+    data: { accent?: string; level?: string; status?: string },
+  ) {
     const material = await this.materialRepo.findOne({ where: { id } });
     if (!material) {
       throw new NotFoundException('Material not found');
     }
     Object.assign(material, data);
     const saved = await this.materialRepo.save(material);
-    return { id: saved.id, accent: saved.accent, level: saved.level, status: saved.status };
+    return {
+      id: saved.id,
+      accent: saved.accent,
+      level: saved.level,
+      status: saved.status,
+    };
   }
 
   async updateOffset(
@@ -218,7 +248,13 @@ export class MaterialsService {
 
   async updateSentence(
     id: string,
-    data: { order?: number; startTime?: number; endTime?: number; text?: string; audioUrl?: string },
+    data: {
+      order?: number;
+      startTime?: number;
+      endTime?: number;
+      text?: string;
+      audioUrl?: string;
+    },
   ): Promise<Sentence> {
     const sentence = await this.sentenceRepo.findOne({ where: { id } });
     if (!sentence) {

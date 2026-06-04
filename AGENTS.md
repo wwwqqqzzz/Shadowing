@@ -97,6 +97,13 @@ onboarding ──4步──→ practice (推荐素材) 或 materials (tabBar)
 - 后端: accent列，duration过滤器，last-progress接口，admin PATCH :id
 - 管理后台: MaterialList编辑Modal(accent/level/status)
 
+### wordTimings 自动对齐 (Alignment)
+- 后端: AlignmentModule (AlignmentService + AlignmentController)
+- 接口: POST /admin/materials/:id/align (body: {model, async}, 默认 base + async)
+- 策略: NestJS spawn scripts/align_sentences.py (Whisper base) as child process, --from-db + --update-wordtimings 安全模式
+- 触发: (1) importFromVtt() 保存后自动 fire-and-forget 调用; (2) 手动调用 /admin/materials/:id/align
+- 进度: 1198/1301 句 (92%) 已对齐; 4 个 BBC 素材因 VTT 碎片化停留在 36-45%
+
 ### 能力测评系统 (Assessment)
 - 后端: AssessmentSentence entity (a001~a005, 5级), UserProfile entity, assessment模块
 - 接口: GET /assessment/sentences (公开), POST /assessment/submit (JWT), GET /assessment/profile (JWT), GET /assessment/admin/stats (公开)
@@ -194,6 +201,7 @@ HH:MM — Operation: file path
 | PATCH | `/admin/materials/:id` | AdminMaterialsController.updateMaterial | No |
 | PATCH | `/admin/materials/:id/offset` | AdminMaterialsController.updateOffset | No |
 | PATCH | `/admin/materials/sentences/:id` | AdminMaterialsController.updateSentence | No |
+| POST | `/admin/materials/:id/align` | AlignmentController.align | No |
 | DELETE | `/admin/materials/:id` | AdminMaterialsController.deleteMaterial | No |
 | POST | `/practice-records` | PracticeRecordsController.create | JWT |
 | GET | `/practice-records/my/last-progress` | PracticeRecordsController.getLastProgress | JWT |

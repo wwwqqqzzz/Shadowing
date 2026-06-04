@@ -1,5 +1,21 @@
 # Shadowing — 变更日志
 
+## [2.8.0] — 2026-06-04
+
+### 新增
+
+#### wordTimings 自动对齐服务 (AlignmentModule)
+- 后端：新 AlignmentModule（service + controller + module）注册到 AppModule
+- 后端：新 `POST /api/admin/materials/:id/align` 端点 — body `{model?, async?}`，默认 `base` 模型 + 异步执行
+- 后端：AlignmentService 策略 — NestJS spawn `scripts/align_sentences.py` as child process，传 `--from-db --update-wordtimings`，DB env 通过 ConfigService 注入
+- 后端：MaterialService.importFromVtt() 保存后 fire-and-forget 触发 `alignmentService.alignMaterial(id, { async: true })`，新素材导入即自动对齐
+- 后端：并发保护 — `runningAlignments: Set<string>` 防止同一素材重复触发
+- 后端：异常隔离 — child process 错误 / spawn 失败 不会污染 import 流程
+- 后端：结果返回 `{ materialId, status, sentencesTotal, sentencesAligned, coverage, durationMs, error? }`
+- 端到端测试：BBC climate 素材 base 模型 13/36 (36%) — 与原 batch rerun 一致，证明与原 manual pipeline 功能等价
+- 端到端测试：tiny 模型 8/36 (22%) — 模型越大覆盖率越高，符合预期
+- 后端：子进程 stdout/stderr 全部 pipe 到 nest logger (debug/warn)
+
 ## [2.7.0] — 2026-06-02
 
 ### 新增

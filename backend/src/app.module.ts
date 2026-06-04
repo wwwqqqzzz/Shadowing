@@ -13,6 +13,7 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { ProgressModule } from './progress/progress.module';
 import { AssessmentModule } from './assessment/assessment.module';
 import { PronounceModule } from './pronounce/pronounce.module';
+import { AlignmentModule } from './alignment/alignment.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { PronounceModule } from './pronounce/pronounce.module';
     ProgressModule,
     AssessmentModule,
     PronounceModule,
+    AlignmentModule,
   ],
 })
 export class AppModule {}
