@@ -660,16 +660,17 @@ Page({
   },
 
   _handleShadowSentenceEnd() {
+    const recorderDone = !this.data.recording
     const isLast = this.data.currentIndex >= this.data.sentences.length - 1
     if (isLast) {
-      this._deferFinishedAfterStop = true
+      if (recorderDone) { this._goToFinished() } else { this._deferFinishedAfterStop = true }
       return
     }
     if (this.data.echoEnabled) {
-      this._deferEchoAfterStop = true
+      if (recorderDone) { this._playShadowEchoPlayback() } else { this._deferEchoAfterStop = true }
       return
     }
-    this._deferAdvanceAfterStop = true
+    if (recorderDone) { this._goNext() } else { this._deferAdvanceAfterStop = true }
   },
 
   _goToFinished() {
