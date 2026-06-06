@@ -56,3 +56,6 @@ backend/uploads/
 # Environment variables
 .env
 .env.*
+
+# Sisyphus session logs
+.sisyphus/logs/

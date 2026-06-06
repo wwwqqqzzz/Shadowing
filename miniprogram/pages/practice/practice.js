@@ -67,6 +67,7 @@ Page({
     this._shadowPlaybackCtx = null
     this._shadowPlayQueue = []
     this._shadowShadowStopTimer = null
+    this._prevPracticeMode = null
     this.setData({ practiceStartTime: Date.now() })
 
     const storedMode = wx.getStorageSync('practiceMode')
@@ -463,9 +464,11 @@ Page({
     this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [], currentWords: [], currentWordIndex: -1 })
     this._destroyPlayback()
     const next = this.data.currentIndex + 1
-    if (next < this.data.sentences.length) {
-      this._playSentence(next)
+    if (next >= this.data.sentences.length) {
+      this._goToFinished()
+      return
     }
+    this._playSentence(next)
   },
 
   // ─── User actions ──────────────────────────────────────
@@ -478,7 +481,14 @@ Page({
     }
 
     if (this.data.practiceMode === 'shadow' && status === 'playing') {
-      wx.showToast({ title: '影子跟读中不能暂停', icon: 'none' })
+      // Pause audio but keep recording, so user can resume shadowing
+      if (this._currentAudio) {
+        this._currentAudio.pause()
+      }
+      this._clearSentenceTimer()
+      this._clearTimeUpdate()
+      this.setData({ playing: false, progress: this._currentAudio ? this._currentAudio.currentTime : 0 })
+      wx.showToast({ title: '已暂停，录音继续中', icon: 'none', duration: 1200 })
       return
     }
 
@@ -555,9 +565,14 @@ Page({
     this.setData({ recordPath: null, feedback: null, showFeedback: false, wordDisplayData: [], currentWords: [], currentWordIndex: -1 })
     this._destroyAudio()
     this._destroyPlayback()
+    if (this.data.practiceMode === 'shadow' && this.data.recording) {
+      this._deferAdvanceAfterStop = true
+      this.recorder.stop()
+      return
+    }
     const next = this.data.currentIndex + 1
     if (next >= this.data.sentences.length) {
-      this.setData({ status: 'finished', playing: false })
+      this._goToFinished()
       return
     }
     this._playSentence(next)
@@ -611,7 +626,7 @@ Page({
 
   _startShadowRecording(sentence, durationMs) {
     const sentenceLen = durationMs || (sentence.endTime - sentence.startTime) || 8000
-    const recordDuration = Math.min(Math.max(sentenceLen, 3000), 60000)
+    const recordDuration = Math.min(Math.max(sentenceLen + 60000, 3000), 180000)
     this._pendingShadowSave = true
     this._currentShadowSentence = sentence
     try {
@@ -660,17 +675,19 @@ Page({
   },
 
   _handleShadowSentenceEnd() {
-    const recorderDone = !this.data.recording
     const isLast = this.data.currentIndex >= this.data.sentences.length - 1
     if (isLast) {
-      if (recorderDone) { this._goToFinished() } else { this._deferFinishedAfterStop = true }
+      if (this.data.recording) { this._deferFinishedAfterStop = true; this.recorder.stop(); return }
+      this._goToFinished()
       return
     }
     if (this.data.echoEnabled) {
-      if (recorderDone) { this._playShadowEchoPlayback() } else { this._deferEchoAfterStop = true }
+      if (this.data.recording) { this._deferEchoAfterStop = true; this.recorder.stop(); return }
+      this._playShadowEchoPlayback()
       return
     }
-    if (recorderDone) { this._goNext() } else { this._deferAdvanceAfterStop = true }
+    if (this.data.recording) { this._deferAdvanceAfterStop = true; this.recorder.stop(); return }
+    this._goNext()
   },
 
   _goToFinished() {
@@ -896,6 +913,21 @@ Page({
     const mode = e.currentTarget.dataset.mode
     wx.setStorageSync('practiceMode', mode)
     this.setData({ showModeModal: false, practiceMode: mode })
+  },
+
+  onToggleShadowMode() {
+    if (this.data.practiceMode === 'shadow') {
+      const prev = this._prevPracticeMode || 'free'
+      this._prevPracticeMode = null
+      wx.setStorageSync('practiceMode', prev)
+      this.setData({ practiceMode: prev })
+      wx.showToast({ title: prev === 'free' ? '自由模式' : prev === 'auto' ? '自动录音' : '手动模式', icon: 'none', duration: 800 })
+    } else {
+      this._prevPracticeMode = this.data.practiceMode
+      wx.setStorageSync('practiceMode', 'shadow')
+      this.setData({ practiceMode: 'shadow' })
+      wx.showToast({ title: '影子跟读模式', icon: 'none', duration: 800 })
+    }
   },
 
   _destroyPlayback() {

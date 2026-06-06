@@ -177,4 +177,9 @@
       <text class="ctrl-text">{{loop ? '循环' : '单次'}}</text>
     </view>
   </view>
+
+  <!-- Shadow mode float toggle -->
+  <view wx:if="{{status !== 'finished'}}" class="shadow-float {{practiceMode === 'shadow' ? 'shadow-float-on' : ''}}" bindtap="onToggleShadowMode" hover-class="shadow-float-tap">
+    <text class="shadow-float-text">影</text>
+  </view>
 </view>

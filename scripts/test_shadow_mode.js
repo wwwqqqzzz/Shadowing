@@ -89,6 +89,7 @@ function newSentence(order, text, startMs, endMs) {
 }
 
 function resetPage(opts = {}) {
+  pageInstance._startShadowRecording = config._startShadowRecording
   pageInstance._pendingShadowSave = false
   pageInstance._pendingNextShadowStart = null
   pageInstance._currentShadowSentence = null
@@ -177,21 +178,21 @@ function runOnErrorChain(err) {
     }
   }
 
-  console.log('\n[1] Bug #1 fix: recordDuration = sentenceLen (not +2000ms)')
-  await t('5000ms sentence → recorder.duration = 5000', () => {
+  console.log('\n[1] Bug #1 fix: recordDuration = sentenceLen + 60s pause buffer')
+  await t('5000ms sentence → recorder.duration = 65000', () => {
     resetPage()
     pageInstance._startShadowRecording(newSentence(1, 'a', 0, 5000), 5000)
-    assert.strictEqual(recorder._currentOpts.duration, 5000)
+    assert.strictEqual(recorder._currentOpts.duration, 65000)
   })
-  await t('500ms sentence → recorder.duration = 3000 (min floor)', () => {
+  await t('500ms sentence → recorder.duration = 60500 (min floor)', () => {
     resetPage()
     pageInstance._startShadowRecording(newSentence(1, 'a', 0, 500), 500)
-    assert.strictEqual(recorder._currentOpts.duration, 3000)
+    assert.strictEqual(recorder._currentOpts.duration, 60500)
   })
-  await t('90000ms sentence → recorder.duration = 60000 (max cap)', () => {
+  await t('90000ms sentence → recorder.duration = 150000 (max cap)', () => {
     resetPage()
     pageInstance._startShadowRecording(newSentence(1, 'a', 0, 90000), 90000)
-    assert.strictEqual(recorder._currentOpts.duration, 60000)
+    assert.strictEqual(recorder._currentOpts.duration, 150000)
   })
 
   console.log('\n[2] Bug #1 fix: queue mechanism when recorder is busy')
@@ -416,6 +417,75 @@ function runOnErrorChain(err) {
       pageInstance._saveShadowRecording(s, 'mock://f.mp3', 1000)
       assert.strictEqual(pageInstance.data.shadowRecordings[0].sentenceOrder, 5)
     }
+  })
+
+  console.log('\n[14] _startShadowRecording sets _pendingShadowSave + snapshot sync')
+  await t('_pendingShadowSave=true, _currentShadowSentence=s, recorder._started=true', () => {
+    resetPage()
+    const s = newSentence(1, 'a', 0, 5000)
+    pageInstance._startShadowRecording(s, 5000)
+    assert.strictEqual(pageInstance._pendingShadowSave, true)
+    assert.strictEqual(pageInstance._currentShadowSentence, s)
+    assert.strictEqual(recorder._started, true)
+    assert.strictEqual(recorder._currentOpts.duration, 65000)
+  })
+
+  console.log('\n[15] runOnStopChain after _startShadowRecording → recording saved')
+  await t('save: shadowRecordings[0] has correct sentenceOrder, hasAudio=true, snapshot cleared', () => {
+    resetPage()
+    const s = newSentence(11, 'k', 0, 5000)
+    pageInstance._startShadowRecording(s, 5000)
+    assert.strictEqual(pageInstance._currentShadowSentence, s)
+    runOnStopChain({ tempFilePath: 'mock://r.mp3', duration: 5000 })
+    assert.strictEqual(pageInstance.data.shadowRecordings.length, 1)
+    assert.strictEqual(pageInstance.data.shadowRecordings[0].sentenceOrder, 11)
+    assert.strictEqual(pageInstance.data.shadowRecordings[0].hasAudio, true)
+    assert.strictEqual(pageInstance._currentShadowSentence, null, 'snapshot cleared after save')
+  })
+
+  console.log('\n[16] runOnErrorChain after _startShadowRecording → error entry recorded')
+  await t('error: shadowRecordings[0].hasAudio=false, snapshot cleared', () => {
+    resetPage()
+    const s = newSentence(12, 'l', 0, 5000)
+    pageInstance._startShadowRecording(s, 5000)
+    assert.strictEqual(pageInstance._currentShadowSentence, s)
+    runOnErrorChain({ errMsg: 'mock' })
+    assert.strictEqual(pageInstance.data.shadowRecordings.length, 1)
+    assert.strictEqual(pageInstance.data.shadowRecordings[0].sentenceOrder, 12)
+    assert.strictEqual(pageInstance.data.shadowRecordings[0].hasAudio, false)
+    assert.strictEqual(pageInstance._currentShadowSentence, null, 'snapshot cleared after error')
+  })
+
+  console.log('\n[17] Error recovery: recorder.start() throws → error entry recorded')
+  await t('recorder.start() throws synchronously → _handleShadowRecordError called with sentence (no re-throw)', () => {
+    resetPage()
+    const s = newSentence(13, 'm', 0, 5000)
+    recorder._started = true
+    let didThrow = false
+    try {
+      pageInstance._startShadowRecording(s, 5000)
+    } catch (e) {
+      didThrow = true
+    }
+    assert.strictEqual(didThrow, false, 'try/catch in _startShadowRecording swallows the throw internally')
+    assert.strictEqual(pageInstance.data.shadowRecordings.length, 1)
+    assert.strictEqual(pageInstance.data.shadowRecordings[0].sentenceOrder, 13)
+    assert.strictEqual(pageInstance.data.shadowRecordings[0].hasAudio, false)
+    recorder._started = false
+  })
+
+  console.log('\n[18] State integrity: snapshot survives across multiple _startShadowRecording calls')
+  await t('after save, snapshot is null; after new start, snapshot is new sentence', () => {
+    resetPage()
+    const s1 = newSentence(1, 'a', 0, 5000)
+    const s2 = newSentence(2, 'b', 5000, 10000)
+    pageInstance._startShadowRecording(s1, 5000)
+    assert.strictEqual(pageInstance._currentShadowSentence, s1)
+    runOnStopChain({ tempFilePath: 'mock://r1.mp3', duration: 5000 })
+    assert.strictEqual(pageInstance._currentShadowSentence, null, 'cleared after save')
+    recorder._started = false
+    pageInstance._startShadowRecording(s2, 5000)
+    assert.strictEqual(pageInstance._currentShadowSentence, s2, 'set to new sentence')
   })
 
   console.log(`\n${pass} passed, ${fail} failed`)

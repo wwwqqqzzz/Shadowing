@@ -1,5 +1,20 @@
 # Shadowing — 变更日志
 
+## [2.9.1] — 2026-06-05
+
+### 新增
+
+#### 影子跟读模式增强 — 暂停录音 + 浮动开关 + 中途保存
+- 小程序：影子模式下点击暂停保留录音继续，恢复播放时从暂停位置续录（recorder duration +60s 缓冲，句末主动 stop）
+- 小程序：练习页右下角浮动「影」字按钮，随时切换进/出影子跟读模式，退出时恢复上一个模式
+- 小程序：影子模式下点击「下一句」自动保存已录片段到 shadowRecordings[]，不留死录音
+- 小程序：`_goNext` 末句触发 `_goToFinished`（之前只对非末句生效，末句跳转不会显示完成页）
+- 脚本：`test_shadow_mode.js` duration 断言更新（sentenceLen + 60000），27/27 pass
+
+### 文档 / 计划
+- 新增 `.sisyphus/plans/roadmap.md` — 完整功能路线图（含多语言支持）
+- 新增 `.sisyphus/plans/intonation-waveform.md` — 语调波形详细实现计划
+
 ## [2.9.0] — 2026-06-04
 
 ### 新增

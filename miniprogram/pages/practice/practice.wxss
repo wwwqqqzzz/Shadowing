@@ -817,3 +817,41 @@ page {
   letter-spacing: 2rpx;
   animation: recPulse 1.4s ease-in-out infinite;
 }
+
+/* ─── Shadow mode float toggle (bottom-right) ─────────── */
+
+.shadow-float {
+  position: fixed;
+  bottom: 180rpx;
+  right: 32rpx;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: var(--color-bg-elevated);
+  border: 2rpx solid var(--color-border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.shadow-float.shadow-float-on {
+  background: var(--color-brand-dim);
+  border-color: var(--color-brand);
+}
+
+.shadow-float-tap {
+  opacity: 0.7;
+}
+
+.shadow-float-text {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+  transition: color 0.2s ease;
+}
+
+.shadow-float-on .shadow-float-text {
+  color: var(--color-brand);
+}
