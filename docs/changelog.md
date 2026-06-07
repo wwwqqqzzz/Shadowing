@@ -1,5 +1,14 @@
 # Shadowing — 变更日志
 
+## [2.9.2] — 2026-06-05
+
+### 修复
+
+#### 末句播完直接结束，无法练习
+- `_onSentenceEnd` 移除 `isLast` 特判分支（之前末句音频播完立刻 `status:'finished'`，不经过录音/评分流程）
+- 末句现在走正常模式流程：free→等待→`_goNext()`→finish，auto→录音→评分→`_scheduleAutoNext`→`_goNext()`→finish
+- `_goToFinished` 合并 shadow/non-shadow 逻辑，统一计算 avgScore
+
 ## [2.9.1] — 2026-06-05
 
 ### 新增

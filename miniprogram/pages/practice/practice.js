@@ -257,29 +257,6 @@ Page({
     this._destroyAudio()
     this.setData({ playing: false })
 
-    const isLast = this.data.currentIndex >= this.data.sentences.length - 1
-
-    if (isLast) {
-      saveProgress(this.data.materialId, 1, this.data.sentences.length)
-      const durationMs = Date.now() - this.data.practiceStartTime
-      const scores = this.data.sessionScores
-      const avgScore = scores.length > 0
-        ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-        : null
-    this.setData({
-      status: 'finished',
-      finishedData: {
-        title: (this.data.material && this.data.material.title) || '',
-        total: this.data.sentences.length,
-        durationText: formatDuration(durationMs),
-        avgScore,
-        showScore: this.data.practiceMode === 'auto' && avgScore != null,
-      },
-    })
-    this._fetchPitchData()
-    return
-    }
-
     if (this.data.loop) {
       setTimeout(() => { this._playSentence(this.data.currentIndex) }, 400)
       return
@@ -701,6 +678,10 @@ Page({
   _goToFinished() {
     saveProgress(this.data.materialId, 1, this.data.sentences.length)
     const durationMs = Date.now() - this.data.practiceStartTime
+    const scores = this.data.sessionScores
+    const avgScore = scores.length > 0
+      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+      : null
     const totalRecordings = this.data.shadowRecordings.length
     const withAudio = this.data.shadowRecordings.filter(r => r.hasAudio).length
     this.setData({
@@ -709,8 +690,9 @@ Page({
         title: (this.data.material && this.data.material.title) || '',
         total: this.data.sentences.length,
         durationText: formatDuration(durationMs),
-        showScore: false,
-        shadowMode: true,
+        avgScore,
+        showScore: this.data.practiceMode === 'auto' && avgScore != null,
+        shadowMode: this.data.practiceMode === 'shadow',
         shadowRecordings: this.data.shadowRecordings,
         shadowWithAudio: withAudio,
         shadowTotal: totalRecordings,
