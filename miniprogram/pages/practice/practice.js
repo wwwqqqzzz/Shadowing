@@ -1,5 +1,5 @@
 const { getMockMaterial } = require('../../mock/data')
-const { getMaterial, getSentences, createPracticeRecord, saveProgress, getPronounce } = require('../../utils/api')
+const { getMaterial, getSentences, createPracticeRecord, saveProgress, getPronounce, getSentencePitch } = require('../../utils/api')
 const { isLoggedIn, login } = require('../../utils/auth')
 const { formatDuration } = require('../../utils/format')
 
@@ -32,6 +32,13 @@ Page({
     currentWordIndex: -1,
     pronouncingWord: '',
     pronouncingIpa: '',
+    // ─── Pitch / intonation waveform state ──────────────
+    pitchData: [],
+    userPitchData: {},
+    pitchIndex: 0,
+    pitchLoading: false,
+    pitchSentenceText: '',
+    pitchViewMode: 'overlay',
     // ─── Shadow mode state ──────────────────────────────
     echoEnabled: false,
     shadowRecordings: [],
@@ -259,17 +266,18 @@ Page({
       const avgScore = scores.length > 0
         ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
         : null
-      this.setData({
-        status: 'finished',
-        finishedData: {
-          title: (this.data.material && this.data.material.title) || '',
-          total: this.data.sentences.length,
-          durationText: formatDuration(durationMs),
-          avgScore,
-          showScore: this.data.practiceMode === 'auto' && avgScore != null,
-        },
-      })
-      return
+    this.setData({
+      status: 'finished',
+      finishedData: {
+        title: (this.data.material && this.data.material.title) || '',
+        total: this.data.sentences.length,
+        durationText: formatDuration(durationMs),
+        avgScore,
+        showScore: this.data.practiceMode === 'auto' && avgScore != null,
+      },
+    })
+    this._fetchPitchData()
+    return
     }
 
     if (this.data.loop) {
@@ -708,6 +716,7 @@ Page({
         shadowTotal: totalRecordings,
       },
     })
+    this._fetchPitchData()
   },
 
   _playShadowEchoPlayback() {
@@ -863,6 +872,215 @@ Page({
     console.log('[shadow] 清理录音文件', paths.length, '个')
   },
 
+  // ─── Pitch / Intonation Waveform ────────────────────────
+
+  _fetchPitchData() {
+    const { sentences } = this.data
+    if (!sentences || sentences.length === 0) return
+    this.setData({ pitchLoading: true })
+    Promise.all(
+      sentences.map(s => getSentencePitch(s.id).then(res => res.pitchData || []))
+    ).then(results => {
+      this.setData({ pitchData: results, pitchIndex: 0, pitchLoading: false })
+      this._renderPitchCanvas()
+    }).catch(err => {
+      console.warn('[pitch] 获取语调数据失败', err)
+      this.setData({ pitchLoading: false })
+    })
+  },
+
+  _renderPitchCanvas() {
+    const query = wx.createSelectorQuery()
+    query.select('#pitchCanvas')
+      .fields({ node: true, size: true })
+      .exec((res) => {
+        if (!res || !res[0]) return
+        const canvas = res[0].node
+        const ctx = canvas.getContext('2d')
+        const dpr = wx.getSystemInfoSync().pixelRatio
+        const cssWidth = res[0].width
+        const cssHeight = res[0].height
+        canvas.width = cssWidth * dpr
+        canvas.height = cssHeight * dpr
+        ctx.scale(dpr, dpr)
+
+        const idx = this.data.pitchIndex
+        const sentence = this.data.sentences[idx]
+        if (!sentence) return
+
+        const pitchArr = this.data.pitchData[idx]
+        if (!pitchArr || pitchArr.length === 0) {
+          ctx.fillStyle = '#666'
+          ctx.font = '14px sans-serif'
+          ctx.textAlign = 'center'
+          ctx.fillText('语调数据加载中…', cssWidth / 2, cssHeight / 2)
+          this.setData({ pitchSentenceText: '' })
+          return
+        }
+
+        this.setData({ pitchSentenceText: sentence.text || '' })
+
+        const mode = this.data.pitchViewMode
+
+        // Background
+        ctx.fillStyle = '#1a1a1a'
+        ctx.fillRect(0, 0, cssWidth, cssHeight)
+
+        // Margins
+        const ml = 40, mr = 16, mt = 16, mb = 28
+        const dw = cssWidth - ml - mr
+        const dh = cssHeight - mt - mb
+
+        // Frequency range (log scale)
+        const fMin = 70, fMax = 450
+        const logMin = Math.log(fMin)
+        const logMax = Math.log(fMax)
+        const logRange = logMax - logMin
+
+        // Sentence duration
+        const durSec = Math.max((sentence.endTime - sentence.startTime) / 1000, 0.5)
+
+        // Coordinate helper
+        const toCanvas = (p) => {
+          const relTime = Math.min(p.time, durSec)
+          const x = ml + (relTime / durSec) * dw
+          const freq = Math.max(fMin, Math.min(fMax, p.frequency))
+          const y = mt + dh - ((Math.log(freq) - logMin) / logRange) * dh
+          return { x, y }
+        }
+
+        // Grid lines
+        ctx.strokeStyle = '#2a2a2a'
+        ctx.lineWidth = 0.5
+        const gridFreqs = [100, 150, 200, 300, 400]
+        ctx.fillStyle = '#555'
+        ctx.font = '10px sans-serif'
+        ctx.textAlign = 'right'
+        for (const f of gridFreqs) {
+          const y = mt + dh - ((Math.log(f) - logMin) / logRange) * dh
+          ctx.beginPath()
+          ctx.moveTo(ml, y)
+          ctx.lineTo(cssWidth - mr, y)
+          ctx.stroke()
+          ctx.fillText(f + 'Hz', ml - 4, y + 3)
+        }
+
+        const userPitch = this.data.userPitchData[sentence.id]
+
+        // Difference ribbons (overlay mode, both curves exist)
+        if (mode === 'overlay' && userPitch && userPitch.length > 0) {
+          for (const po of pitchArr) {
+            const poPt = toCanvas(po)
+            let nearest = null
+            let minDiff = Infinity
+            for (const pu of userPitch) {
+              const d = Math.abs(pu.time - po.time)
+              if (d < minDiff) { minDiff = d; nearest = pu }
+            }
+            if (nearest && minDiff < 0.15) {
+              const puPt = toCanvas(nearest)
+              const diffHz = Math.abs(po.frequency - nearest.frequency)
+              const ratio = Math.min(diffHz / 80, 1)
+              const r = Math.round(125 + ratio * 130)
+              const g = Math.round(206 - ratio * 180)
+              const b = Math.round(160 - ratio * 160)
+              ctx.strokeStyle = `rgb(${r},${g},${b})`
+              ctx.lineWidth = 2.5
+              ctx.beginPath()
+              ctx.moveTo(poPt.x, poPt.y)
+              ctx.lineTo(poPt.x, puPt.y)
+              ctx.stroke()
+            }
+          }
+        }
+
+        // Original pitch line
+        if (mode === 'overlay' || mode === 'original') {
+          ctx.strokeStyle = '#7dcea0'
+          ctx.lineWidth = 2
+          ctx.beginPath()
+          let first = true
+          for (const p of pitchArr) {
+            const { x, y } = toCanvas(p)
+            if (first) { ctx.moveTo(x, y); first = false }
+            else { ctx.lineTo(x, y) }
+          }
+          ctx.stroke()
+        }
+
+        // User pitch overlay
+        if (mode === 'overlay' || mode === 'user') {
+          if (userPitch && userPitch.length > 0) {
+            ctx.strokeStyle = '#e6a8a8'
+            ctx.lineWidth = 1.5
+            ctx.beginPath()
+            let first = true
+            for (const p of userPitch) {
+              const { x, y } = toCanvas(p)
+              if (first) { ctx.moveTo(x, y); first = false }
+              else { ctx.lineTo(x, y) }
+            }
+            ctx.stroke()
+          }
+        }
+
+        // Legend
+        if (mode === 'overlay') {
+          ctx.font = '10px sans-serif'
+          ctx.fillStyle = '#7dcea0'
+          ctx.textAlign = 'left'
+          ctx.fillText('原音', ml, cssHeight - 4)
+          ctx.fillStyle = '#e6a8a8'
+          ctx.textAlign = 'right'
+          ctx.fillText('我的', ml + dw, cssHeight - 4)
+        }
+      })
+  },
+
+  onPitchViewMode(e) {
+    this.setData({ pitchViewMode: e.currentTarget.dataset.mode })
+    this._renderPitchCanvas()
+  },
+
+  _analyzeRecordingPitch(tempFilePath, sentenceId) {
+    const { BASE_URL } = require('../../utils/request')
+    wx.uploadFile({
+      url: `${BASE_URL}/asr/pitch`,
+      filePath: tempFilePath,
+      name: 'audio',
+      success: (res) => {
+        if (res.statusCode < 200 || res.statusCode >= 300) return
+        try {
+          const result = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
+          const pitchData = result.pitchData || []
+          const dp = this.data.userPitchData
+          dp[sentenceId] = pitchData
+          this.setData({ userPitchData: dp })
+          this._renderPitchCanvas()
+        } catch (e) {
+          console.warn('[pitch] 录音分析结果解析失败', e)
+        }
+      },
+      fail: (err) => {
+        console.warn('[pitch] 录音语调分析失败', err)
+      },
+    })
+  },
+
+  onPitchPrev() {
+    if (this.data.pitchIndex > 0) {
+      this.setData({ pitchIndex: this.data.pitchIndex - 1 })
+      this._renderPitchCanvas()
+    }
+  },
+
+  onPitchNext() {
+    if (this.data.pitchIndex < this.data.sentences.length - 1) {
+      this.setData({ pitchIndex: this.data.pitchIndex + 1 })
+      this._renderPitchCanvas()
+    }
+  },
+
   // ─── Recording ──────────────────────────────────────────
 
   onToggleRecord() {
@@ -983,6 +1201,9 @@ Page({
         }
         if (this.data.practiceMode === 'auto') {
           this._scheduleAutoNext(3000)
+        }
+        if (sentence && sentence.id) {
+          this._analyzeRecordingPitch(tempFilePath, sentence.id)
         }
       },
       fail: (err) => {

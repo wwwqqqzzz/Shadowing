@@ -34,6 +34,23 @@
       <text wx:if="{{finishedData.showScore}}" class="finished-stat-score">平均 {{finishedData.avgScore}} 分</text>
       <text wx:if="{{finishedData.shadowMode}}" class="finished-stat-shadow">跟读 {{finishedData.shadowWithAudio}} / {{finishedData.shadowTotal}} 句</text>
     </view>
+
+    <!-- Intonation Waveform -->
+    <view class="pitch-section" wx:if="{{pitchLoading || pitchData.length > 0}}">
+      <text class="pitch-label">语调波形</text>
+      <canvas type="2d" id="pitchCanvas" class="pitch-canvas"></canvas>
+      <text class="pitch-sentence-text" wx:if="{{pitchSentenceText}}">{{pitchSentenceText}}</text>
+      <view class="pitch-nav" wx:if="{{pitchData.length > 1}}">
+        <view class="pitch-nav-btn {{pitchIndex <= 0 ? 'pitch-nav-disabled' : ''}}" bindtap="onPitchPrev">‹ 上一句</view>
+        <text class="pitch-nav-index">{{pitchIndex + 1}} / {{pitchData.length}}</text>
+        <view class="pitch-nav-btn {{pitchIndex >= pitchData.length - 1 ? 'pitch-nav-disabled' : ''}}" bindtap="onPitchNext">下一句 ›</view>
+      </view>
+      <view class="pitch-view-toggle">
+        <view class="pitch-view-btn {{pitchViewMode === 'overlay' ? 'pitch-view-active' : ''}}" data-mode="overlay" bindtap="onPitchViewMode">叠加</view>
+        <view class="pitch-view-btn {{pitchViewMode === 'original' ? 'pitch-view-active' : ''}}" data-mode="original" bindtap="onPitchViewMode">原音</view>
+        <view class="pitch-view-btn {{pitchViewMode === 'user' ? 'pitch-view-active' : ''}}" data-mode="user" bindtap="onPitchViewMode">我的</view>
+      </view>
+    </view>
     <view wx:if="{{finishedData.shadowMode}}" class="finished-shadow-buttons">
       <view class="btn-shadow-primary" bindtap="_playCompleteShadow" hover-class="btn-tap" wx:if="{{!shadowCompletePlaying}}">
         <text class="btn-shadow-text">听我的跟读</text>

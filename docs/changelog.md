@@ -11,6 +11,16 @@
 - 小程序：`_goNext` 末句触发 `_goToFinished`（之前只对非末句生效，末句跳转不会显示完成页）
 - 脚本：`test_shadow_mode.js` duration 断言更新（sentenceLen + 60000），27/27 pass
 
+### 增强
+
+#### 语调波形 — 视图切换 + 差异提示
+- `_renderPitchCanvas` 重构，提取 toCanvas() 坐标辅助函数，支持 3 种视图模式
+  - 叠加模式（默认）：同时绘制原音（绿色）+ 用户（红色）双曲线，并在纵轴上绘制差异色带（绿→黄→红渐变，<20Hz 绿，>80Hz 红）
+  - 原音模式：只显示原音曲线，无干扰
+  - 我的模式：只显示用户录音曲线
+- 练习完成页 canvas 下方新增 3 按钮切换栏（叠加 / 原音 / 我的）
+- 叠加模式下右下角显示图例（原音 / 我的）
+
 ### 文档 / 计划
 - 新增 `.sisyphus/plans/roadmap.md` — 完整功能路线图（含多语言支持）
 - 新增 `.sisyphus/plans/intonation-waveform.md` — 语调波形详细实现计划

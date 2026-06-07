@@ -753,6 +753,96 @@ page {
   line-height: 1;
 }
 
+/* ─── Pitch view mode toggle ──────────────────────────────── */
+
+.pitch-view-toggle {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.pitch-view-btn {
+  flex: 1;
+  text-align: center;
+  font-size: 24rpx;
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-elevated);
+  border: 1rpx solid var(--color-border-default);
+  border-radius: 12rpx;
+  padding: 10rpx 0;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.pitch-view-btn:active {
+  opacity: 0.7;
+}
+
+.pitch-view-active {
+  color: var(--color-brand);
+  background: var(--color-brand-dim);
+  border-color: var(--color-brand);
+}
+
+/* ─── Pitch / Intonation Waveform ─────────────────────────── */
+
+.pitch-section {
+  width: 100%;
+  margin-bottom: 48rpx;
+}
+
+.pitch-label {
+  display: block;
+  font-size: 24rpx;
+  color: var(--color-text-tertiary);
+  margin-bottom: 12rpx;
+  letter-spacing: 2rpx;
+}
+
+.pitch-canvas {
+  width: 100%;
+  height: 220rpx;
+  border-radius: 12rpx;
+  background: #1a1a1a;
+}
+
+.pitch-sentence-text {
+  display: block;
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+  margin-top: 8rpx;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.pitch-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12rpx;
+}
+
+.pitch-nav-btn {
+  font-size: 24rpx;
+  color: var(--color-brand);
+  padding: 8rpx 20rpx;
+  border: 1rpx solid var(--color-brand-dim);
+  border-radius: 12rpx;
+}
+
+.pitch-nav-btn:active {
+  opacity: 0.7;
+}
+
+.pitch-nav-disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.pitch-nav-index {
+  font-size: 22rpx;
+  color: var(--color-text-tertiary);
+}
+
 /* ─── Shadow mode finished page ─────────────────────────── */
 
 .finished-stat-shadow {
